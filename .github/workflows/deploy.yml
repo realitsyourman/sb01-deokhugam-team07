@@ -49,6 +49,8 @@ jobs:
         run: chmod +x gradlew
 
       - name: Gradle 빌드 및 테스트
+        env:
+          SPRING_PROFILES_ACTIVE: test
         run: ./gradlew clean test
 
   build_and_push:
