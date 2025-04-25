@@ -70,11 +70,11 @@ jobs:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActionsRole
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: ECR 로그인
-        uses: aws-actions/amazon-ecr-login@v1
+      - name: ECR Public 로그인
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: public
-          region: us-east-1
 
       # BuildKit 캐시 사용해서 빌드 속도 향상
       - name: QEMU 설정
