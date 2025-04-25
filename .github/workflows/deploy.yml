@@ -64,12 +64,18 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
 
-      - name: Debug OIDC token claims
+      - name: Fetch & Decode OIDC token payload
+        shell: bash
         run: |
-          echo "TOKEN_URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
-          echo "TOKEN: $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
-          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-               $ACTIONS_ID_TOKEN_REQUEST_URL | jq .
+          URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com"
+          RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                          "$URL")
+          TOKEN=$(echo "$RESPONSE" | jq -r .value)
+          echo "==== OIDC JWT Payload ===="
+          echo "$TOKEN" \
+            | cut -d'.' -f2 \
+            | base64 --decode 2>/dev/null \
+            | jq .
 
       - name: AWS 자격 증명
         uses: aws-actions/configure-aws-credentials@v4
