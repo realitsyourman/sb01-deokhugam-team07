@@ -36,3 +36,6 @@ deokhugam:
     type: local # local | s3
     local:
       root-path: src/main/resources/static/storage
+
+server:
+  port: 80
