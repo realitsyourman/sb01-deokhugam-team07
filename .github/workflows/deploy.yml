@@ -64,6 +64,13 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
 
+      - name: Debug OIDC token claims
+        run: |
+          echo "TOKEN_URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
+          echo "TOKEN: $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+               $ACTIONS_ID_TOKEN_REQUEST_URL | jq .
+
       - name: AWS 자격 증명
         uses: aws-actions/configure-aws-credentials@v4
         with:
