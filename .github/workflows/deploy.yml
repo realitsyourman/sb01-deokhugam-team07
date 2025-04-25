@@ -68,7 +68,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActionsRole
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: us-east-1
 
       - name: ECR Public 로그인
         id: login-ecr-public
