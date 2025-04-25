@@ -76,6 +76,7 @@ jobs:
         with:
           registry-type: public
         env:
+          AWS_REGION: us-east-1
           AWS_DEFAULT_REGION: us-east-1
 
       # BuildKit 캐시 사용해서 빌드 속도 향상
