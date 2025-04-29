@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,15 +31,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
+  private static final String HEADER = "Deokhugam-Request-User-ID";
+
   private final UserService userService;
   private final AuthenticationManager authenticationManager;
 
   /**
-  * @methodName : join
-  * @date : 2025. 4. 23. 09:43
-  * @author : wongil
-  * @Description: 유저 회원가입
-  **/
+   * @methodName : join
+   * @date : 2025. 4. 23. 09:43
+   * @author : wongil
+   * @Description: 유저 회원가입
+   **/
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public UserDto join(@RequestBody @Validated UserRegisterRequest request) {
@@ -47,11 +50,11 @@ public class UserController {
   }
 
   /**
-  * @methodName : login
-  * @date : 2025. 4. 21. 13:20
-  * @author : wongil
-  * @Description: 유저 로그인
-  **/
+   * @methodName : login
+   * @date : 2025. 4. 21. 13:20
+   * @author : wongil
+   * @Description: 유저 로그인
+   **/
   @PostMapping("/login")
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<UserDto> loginUser(@RequestBody @Validated UserLoginRequest request) {
@@ -68,35 +71,46 @@ public class UserController {
   }
 
   /**
-  * @methodName : modify
-  * @date : 2025. 4. 22. 11:19
-  * @author : wongil
-  * @Description: 유저 수정
-  **/
+   * @methodName : modify
+   * @date : 2025. 4. 22. 11:19
+   * @author : wongil
+   * @Description: 유저 수정
+   **/
   @PatchMapping("/{userId}")
   @ResponseStatus(HttpStatus.OK)
   public UserDto modify(@RequestBody @Validated UserUpdateRequest request,
-      @NotNull @PathVariable("userId") UUID userID) {
+      @NotNull @PathVariable("userId") UUID userID,
+      @RequestHeader(value = HEADER) UUID authUserId) {
 
     return userService.update(userID, request);
   }
 
   @GetMapping("/{userId}")
   @ResponseStatus(HttpStatus.OK)
-  public UserDto find(@PathVariable("userId") UUID userId) {
+  public UserDto find(@PathVariable("userId") UUID userId,
+      @RequestHeader(value = HEADER) UUID authUserId) {
 
     return userService.find(userId);
   }
 
   @DeleteMapping("/{userId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void logicalDelete(@PathVariable("userId") UUID userId) {
+  public void logicalDelete(@PathVariable("userId") UUID userId,
+      @RequestHeader(value = HEADER) UUID authUserId) {
     userService.softDelete(userId);
   }
 
+  /**
+   * @methodName : physicalDelete
+   * @date : 2025. 4. 29. 17:48
+   * @author : wongil
+   * @Description: 사용자 물리 삭제
+   **/
   @DeleteMapping("/{userId}/hard")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void physicalDelete(@PathVariable("userId") UUID userId) {
+  public void physicalDelete(@PathVariable("userId") UUID userId,
+      @RequestHeader(value = HEADER) UUID authUserId) {
+
     userService.physicalDelete(userId);
   }
 }
