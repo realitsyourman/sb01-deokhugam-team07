@@ -11,6 +11,8 @@ HELP.md
 spy.log
 src/main/resources/static/storage/
 src/test/resources/static/storage/
+.env
+prod.env
 
 ### STS ###
 .apt_generated
