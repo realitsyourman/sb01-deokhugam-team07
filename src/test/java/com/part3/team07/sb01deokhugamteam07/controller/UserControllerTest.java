@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.part3.team07.sb01deokhugamteam07.config.SecurityConfig;
 import com.part3.team07.sb01deokhugamteam07.dto.user.UserDto;
 import com.part3.team07.sb01deokhugamteam07.dto.user.request.UserLoginRequest;
 import com.part3.team07.sb01deokhugamteam07.dto.user.request.UserRegisterRequest;
@@ -24,7 +23,7 @@ import com.part3.team07.sb01deokhugamteam07.exception.user.DuplicateUserEmailExc
 import com.part3.team07.sb01deokhugamteam07.exception.user.IllegalUserPasswordException;
 import com.part3.team07.sb01deokhugamteam07.exception.user.UserNotFoundException;
 import com.part3.team07.sb01deokhugamteam07.repository.UserRepository;
-import com.part3.team07.sb01deokhugamteam07.security.CustomUserDetailsService;
+import com.part3.team07.sb01deokhugamteam07.security.PreAuthUserDetailsService;
 import com.part3.team07.sb01deokhugamteam07.service.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,8 +32,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,7 +42,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
-@Import({SecurityConfig.class, CustomUserDetailsService.class})
+//@Import({SecurityConfig.class, CustomUserDetailsService.class})
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
   @Autowired
@@ -60,6 +60,9 @@ class UserControllerTest {
 
   @MockitoBean
   private AuthenticationManager authenticationManager;
+
+  @MockitoBean
+  private PreAuthUserDetailsService preAuthUserDetailsService;
 
   @Test
   @DisplayName("POST /api/users - 회원가입 성공")
@@ -407,7 +410,7 @@ class UserControllerTest {
             .header("Deokhugam-Request-User-ID", userId))
         .andExpect(status().isNotFound());
   }
-  
+
   @Test
   @DisplayName("DELETE /api/users/{userId}/hard - 사용자 물리 삭제")
   void physicalDelete() throws Exception {
