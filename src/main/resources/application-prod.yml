@@ -33,9 +33,19 @@ management:
 
 deokhugam:
   storage:
-    type: local # local | s3
+    type: local
     local:
       root-path: src/main/resources/static/storage
+    s3:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+      region: ${AWS_REGION}
+      bucket: ${AWS_S3_BUCKET}
+
+naver:
+  book:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
 
 server:
   port: 80
