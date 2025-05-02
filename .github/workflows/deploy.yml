@@ -122,13 +122,6 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ env.ECR_REPOSITORY_URI }}:${{ github.sha }}
 
-      - name: 실행 중인 태스크 중지
-        run: |
-          aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --desired-count 0
-
       - name: ECS 서비스 배포
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
