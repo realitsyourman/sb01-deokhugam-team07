@@ -10,9 +10,9 @@ import com.part3.team07.sb01deokhugamteam07.entity.Period;
 import com.part3.team07.sb01deokhugamteam07.service.BookService;
 import com.part3.team07.sb01deokhugamteam07.service.DashboardService;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -42,9 +41,12 @@ public class BookController {
   private final DashboardService dashboardService;
 
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-  public ResponseEntity<BookDto> create(@RequestPart("bookData") BookCreateRequest request,
+  public ResponseEntity<BookDto> create(
+      @RequestPart("bookData") BookCreateRequest request,
       @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage) {
+    log.info("도서 생성 요청: {}", request);
     BookDto bookDto = bookService.create(request, thumbnailImage);
+    log.debug("도서 생성 응답: {}", bookDto);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -52,10 +54,13 @@ public class BookController {
   }
 
   @PatchMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-  public ResponseEntity<BookDto> update(@PathVariable UUID id,
+  public ResponseEntity<BookDto> update(
+      @PathVariable UUID id,
       @RequestPart("bookData") @Valid BookUpdateRequest request,
       @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage) {
+    log.info("도서 수정 요청: id={}, request={}", id, request);
     BookDto bookDto = bookService.update(id, request, thumbnailImage);
+    log.debug("도서 수정 응답: {}", bookDto);
 
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -64,7 +69,9 @@ public class BookController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> softDelete(@PathVariable UUID id) {
+    log.info("도서 논리 삭제 요청: id={}", id);
     bookService.softDelete(id);
+    log.debug("도서 논리 삭제 완료");
 
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
@@ -73,7 +80,9 @@ public class BookController {
 
   @DeleteMapping("/{id}/hard")
   public ResponseEntity<Void> hardDelete(@PathVariable UUID id) {
+    log.info("도서 물리 삭제 요청: id={}", id);
     bookService.hardDelete(id);
+    log.debug("도서 물리 삭제 완료");
 
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
@@ -82,7 +91,9 @@ public class BookController {
 
   @GetMapping("/{id}")
   public ResponseEntity<BookDto> find(@PathVariable UUID id) {
+    log.info("도서 상세 정보 조회 요청: id={}", id);
     BookDto bookDto = bookService.find(id);
+    log.debug("도서 상세 정보 조회 응답: {}", bookDto);
 
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -96,9 +107,12 @@ public class BookController {
       @RequestParam(required = false, defaultValue = "desc") String direction,
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after,
-      @RequestParam(required = false, defaultValue = "50") int size) {
+      @RequestParam(required = false, defaultValue = "50") int limit) {
+    log.info("도서 목록 조회 요청: keyword={}, orderBy={}, direction={}, cursor={}, after={}, limit={}",
+        keyword, orderBy, direction, cursor, after, limit);
     CursorPageResponseBookDto bookDto = bookService.findAll(keyword, orderBy, direction, cursor,
-        after, size);
+        after, limit);
+    log.debug("도서 목록 조회 응답: {}", bookDto);
 
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -112,16 +126,22 @@ public class BookController {
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) String after,
       @RequestParam(required = false, defaultValue = "50") @Min(1) int limit
-  ){
+  ) {
+    log.info("인기 도서 목록 조회 요청: period={}, direction={}, cursor={}, after={}, limit={}",
+        period, direction, cursor, after, limit);
+    CursorPageResponsePopularBookDto popularBookDto = dashboardService.getPopularBooks(period, direction, cursor, after, limit);
+    log.debug("인기 도서 목록 조회 응답: {}", popularBookDto);
 
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(dashboardService.getPopularBooks(period, direction, cursor, after, limit));
+        .body(popularBookDto);
   }
 
   @GetMapping("/info")
   public ResponseEntity<NaverBookDto> getInfo(@RequestParam String isbn) {
+    log.info("ISBN으로 도서 정보 조회 요청: isbn={}", isbn);
     NaverBookDto naverBookDto = bookService.getInfo(isbn);
+    log.debug("ISBN으로 도서 정보 조회 응답: {}", naverBookDto);
 
     return ResponseEntity
         .status(HttpStatus.OK)
