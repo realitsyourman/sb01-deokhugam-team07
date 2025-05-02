@@ -33,7 +33,7 @@ public class S3Storage implements Storage {
   public String put(FileType type, String fileName, byte[] bytes) {
     String key = resolvePath(type, fileName);
 
-    if (exists(key)) {
+    if (type != FileType.LOG && exists(key)) {
       throw StorageAlreadyExistsException.withFileName(fileName);
     }
 
