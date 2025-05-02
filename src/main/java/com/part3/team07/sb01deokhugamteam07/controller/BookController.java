@@ -42,7 +42,7 @@ public class BookController {
 
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
   public ResponseEntity<BookDto> create(
-      @RequestPart("bookData") BookCreateRequest request,
+      @RequestPart("bookData") @Valid BookCreateRequest request,
       @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage) {
     log.info("도서 생성 요청: {}", request);
     BookDto bookDto = bookService.create(request, thumbnailImage);
@@ -103,11 +103,11 @@ public class BookController {
   @GetMapping
   public ResponseEntity<CursorPageResponseBookDto> findAll(
       @RequestParam(required = false) String keyword,
-      @RequestParam(required = false, defaultValue = "title") String orderBy,
-      @RequestParam(required = false, defaultValue = "desc") String direction,
+      @RequestParam(defaultValue = "title") String orderBy,
+      @RequestParam(defaultValue = "desc") String direction,
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after,
-      @RequestParam(required = false, defaultValue = "50") int limit) {
+      @RequestParam(defaultValue = "50") int limit) {
     log.info("도서 목록 조회 요청: keyword={}, orderBy={}, direction={}, cursor={}, after={}, limit={}",
         keyword, orderBy, direction, cursor, after, limit);
     CursorPageResponseBookDto bookDto = bookService.findAll(keyword, orderBy, direction, cursor,
