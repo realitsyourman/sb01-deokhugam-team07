@@ -90,7 +90,6 @@ jobs:
         with:
           context: .
           push: true
-          registry: public.ecr.aws
           tags: |
             ${{ env.ECR_REPOSITORY_URI }}:latest
             ${{ env.ECR_REPOSITORY_URI }}:${{ github.sha }}
