@@ -8,12 +8,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.part3.team07.sb01deokhugamteam07.entity.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ReviewRepository extends JpaRepository<Review, UUID> {
+public interface ReviewRepository extends JpaRepository<Review, UUID>, ReviewRepositoryCustom {
   // 파워 유저에서 이용되는 메서드, 특정 사용자가 사용한 리뷰를 날짜 범위내에서 조회
   List<Review> findByUserIdAndCreatedAtBetweenAndIsDeletedFalse(
       UUID userId,
@@ -52,4 +53,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
   boolean existsByUserIdAndBookId(UUID userId, UUID bookId);
 
   Optional<Review> findByIdAndIsDeletedFalse(UUID reviewId);
+
+  @Override
+  @EntityGraph(attributePaths = {"book", "user"})
+  List<Review> findAllById(Iterable<UUID> ids);
 }

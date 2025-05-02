@@ -1,4 +1,4 @@
-package com.part3.team07.sb01deokhugamteam07.batch;
+package com.part3.team07.sb01deokhugamteam07.scheduler;
 
 import com.part3.team07.sb01deokhugamteam07.batch.popularbook.PopularBookDashboardBatchService;
 import com.part3.team07.sb01deokhugamteam07.batch.popularreview.PopularReviewDashboardBatchService;
@@ -19,7 +19,7 @@ public class ApplicationScheduler {
   private final PopularReviewDashboardBatchService popularReviewDashboardBatchService;
   private final NotificationService notificationService;
 
-  @Scheduled(cron = "0 0 3 * * *")
+  @Scheduled(cron = "0 25 17 * * *")
   public void calculateAllDashboardData(){
     log.info("오전 3시 : 대시보드 데이터 일괄 계산 시작");
     // 순차 실행
