@@ -33,7 +33,7 @@ management:
 
 deokhugam:
   storage:
-    type: local
+    type: s3
     local:
       root-path: src/main/resources/static/storage
     s3:
