@@ -48,7 +48,7 @@ public class LocalStorage implements Storage {
       Files.createDirectories(filePath.getParent());
       try (OutputStream outputStream = Files.newOutputStream(filePath, StandardOpenOption.CREATE_NEW)) {
         outputStream.write(bytes);
-        return filePath.toString();
+        return "/storage/" + getSubDirByType(type) + "/" + fileName;
       }
     } catch (FileAlreadyExistsException e) {
       throw StorageAlreadyExistsException.withFileName(fileName);

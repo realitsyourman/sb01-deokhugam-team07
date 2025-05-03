@@ -4,6 +4,8 @@ import com.part3.team07.sb01deokhugamteam07.entity.Book;
 import com.part3.team07.sb01deokhugamteam07.entity.QBook;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
@@ -73,12 +75,25 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     }
   }
 
+  private StringExpression getNormalizedTitle(QBook book) {
+    return Expressions.stringTemplate(
+        "REGEXP_REPLACE(LOWER({0}), '[^가-힣a-z0-9]', '', 'g')",
+        book.title
+    );
+  }
+
+  private String normalizeString(String input) {
+    if (input == null) return null;
+    return input.toLowerCase().replaceAll("[^가-힣a-z0-9]", "");
+  }
+
   private BooleanExpression createAscCursorPredicate(QBook book, String orderBy,
       String cursor, LocalDateTime after) {
     switch (orderBy) {
       case "title":
-        return book.title.gt(cursor).or(
-            book.title.eq(cursor).and(book.createdAt.lt(after))
+        String normalizedCursor = normalizeString(cursor);
+        return getNormalizedTitle(book).gt(normalizedCursor).or(
+            getNormalizedTitle(book).eq(normalizedCursor).and(book.createdAt.lt(after))
         );
       case "publishedDate":
         LocalDate cursorDate = LocalDate.parse(cursor);
@@ -104,8 +119,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
       String cursor, LocalDateTime after) {
     switch (orderBy) {
       case "title":
-        return book.title.lt(cursor).or(
-            book.title.eq(cursor).and(book.createdAt.lt(after))
+        String normalizedCursor = normalizeString(cursor);
+        return getNormalizedTitle(book).lt(normalizedCursor).or(
+            getNormalizedTitle(book).eq(normalizedCursor).and(book.createdAt.lt(after))
         );
       case "publishedDate":
         LocalDate cursorDate = LocalDate.parse(cursor);
@@ -130,13 +146,28 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
   private void applySorting(JPAQuery<Book> query, QBook book, String orderBy, String direction) {
     boolean isAsc = "asc".equalsIgnoreCase(direction);
 
-    OrderSpecifier<?> primary = switch (orderBy) {
-      case "title" -> isAsc ? book.title.asc() : book.title.desc();
-      case "publishedDate" -> isAsc ? book.publishDate.asc() : book.publishDate.desc();
-      case "rating" -> isAsc ? book.rating.asc() : book.rating.desc();
-      case "reviewCount" -> isAsc ? book.reviewCount.asc() : book.reviewCount.desc();
-      default -> book.title.desc();
-    };
+    OrderSpecifier<?> primary;
+
+    switch (orderBy) {
+      case "title":
+        if (isAsc) {
+          primary = getNormalizedTitle(book).asc();
+        } else {
+          primary = getNormalizedTitle(book).desc();
+        }
+        break;
+      case "publishedDate":
+        primary = isAsc ? book.publishDate.asc() : book.publishDate.desc();
+        break;
+      case "rating":
+        primary = isAsc ? book.rating.asc() : book.rating.desc();
+        break;
+      case "reviewCount":
+        primary = isAsc ? book.reviewCount.asc() : book.reviewCount.desc();
+        break;
+      default:
+        primary = book.title.desc();
+    }
 
     query.orderBy(primary, book.createdAt.desc());
   }
