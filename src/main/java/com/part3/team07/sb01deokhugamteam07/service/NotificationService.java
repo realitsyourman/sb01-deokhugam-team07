@@ -3,6 +3,7 @@ package com.part3.team07.sb01deokhugamteam07.service;
 
 import com.part3.team07.sb01deokhugamteam07.dto.notification.NotificationDto;
 import com.part3.team07.sb01deokhugamteam07.dto.notification.request.NotificationCreateRequest;
+import com.part3.team07.sb01deokhugamteam07.dto.notification.request.NotificationType;
 import com.part3.team07.sb01deokhugamteam07.dto.notification.request.NotificationUpdateRequest;
 import com.part3.team07.sb01deokhugamteam07.dto.notification.response.CursorPageResponseNotificationDto;
 import com.part3.team07.sb01deokhugamteam07.entity.Notification;
@@ -44,8 +45,11 @@ public class NotificationService {
   public void create(NotificationCreateRequest request) {
     try {
       log.info("알림 생성 시작");
-      User sender = userRepository.findById(request.getSenderId())
-          .orElseThrow(UserNotFoundException::new);
+      User sender = null;
+      if(request.getType() != NotificationType.REVIEW_RANKED ) {
+        sender = userRepository.findById(request.getSenderId())
+            .orElseThrow(UserNotFoundException::new);
+      }
 
       Review review = reviewRepository.findById(request.getReviewId())
           .orElseThrow(() -> new NoSuchElementException(String.valueOf(request.getReviewId())));
@@ -56,7 +60,7 @@ public class NotificationService {
         case REVIEW_LIKED -> "[" + sender.getNickname() + "]" + "님이 나의 리뷰를 좋아합니다.";
         case REVIEW_COMMENTED -> "[" + sender.getNickname() + "]" + "님이 나의 리뷰에 댓글을 남겼습니다.";
         case REVIEW_RANKED ->
-            "나의 리뷰가" + request.getPeriod() + " 인기 리뷰" + request.getRank() + "위에 선정되었습니다.";
+            "나의 리뷰가 " + request.getPeriod() + " 인기 리뷰 " + request.getRank() + "위에 선정되었습니다.";
       };
 
       Notification notification = Notification.builder()
