@@ -165,7 +165,7 @@ public class DashboardService {
         content,
         nextCursor,
         nextAfter,
-        content.size(),
+        limit,
         totalElement,
         hasNext
     );
@@ -272,7 +272,7 @@ public class DashboardService {
         content,
         nextCursor,
         nextAfter,
-        content.size(),
+        limit,
         totalElement,
         hasNext
     );
@@ -380,7 +380,7 @@ public class DashboardService {
         content,
         nextCursor,
         nextAfter,
-        content.size(),
+        limit,
         totalElement,
         hasNext
     );
