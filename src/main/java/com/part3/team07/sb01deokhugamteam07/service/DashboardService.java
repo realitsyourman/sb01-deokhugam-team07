@@ -43,6 +43,15 @@ public class DashboardService {
   private final ReviewRepository reviewRepository;
   private final BookRepository bookRepository;
 
+
+  /**
+   * 대시보드 삭제 기능
+   * **/
+  public void delete(){
+    dashboardRepository.deleteAll();
+  }
+
+
   /**
    * Power User 조회합니다.
    *
