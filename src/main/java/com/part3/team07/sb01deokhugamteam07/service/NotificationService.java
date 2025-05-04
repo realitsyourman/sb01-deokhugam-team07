@@ -45,22 +45,32 @@ public class NotificationService {
   public void create(NotificationCreateRequest request) {
     try {
       log.info("알림 생성 시작");
-      User sender = null;
-      if(request.getType() != NotificationType.REVIEW_RANKED ) {
-        sender = userRepository.findById(request.getSenderId())
-            .orElseThrow(UserNotFoundException::new);
-      }
 
       Review review = reviewRepository.findById(request.getReviewId())
           .orElseThrow(() -> new NoSuchElementException(String.valueOf(request.getReviewId())));
 
       User receiver = review.getUser();
 
+      User sender = null;
+      if (request.getType() != NotificationType.REVIEW_RANKED) {
+        sender = userRepository.findById(request.getSenderId())
+            .orElseThrow(UserNotFoundException::new);
+      }
+
       String content = switch (request.getType()) {
-        case REVIEW_LIKED -> "[" + sender.getNickname() + "]" + "님이 나의 리뷰를 좋아합니다.";
-        case REVIEW_COMMENTED -> "[" + sender.getNickname() + "]" + "님이 나의 리뷰에 댓글을 남겼습니다.";
-        case REVIEW_RANKED ->
-            "나의 리뷰가 " + request.getPeriod() + " 인기 리뷰 " + request.getRank() + "위에 선정되었습니다.";
+        case REVIEW_LIKED -> String.format("[%s]님이 나의 리뷰를 좋아합니다.", sender.getNickname());
+        case REVIEW_COMMENTED -> String.format("[%s]님이 나의 리뷰에 댓글을 남겼습니다.", sender.getNickname());
+        case REVIEW_RANKED -> {
+          String periodText = switch (request.getPeriod()) {
+            case DAILY -> "일간";
+            case WEEKLY -> "주간";
+            case MONTHLY -> "월간";
+            case ALL_TIME -> "역대";
+          };
+          String msg = String.format("나의 리뷰가 %s 인기 리뷰 %d위에 선정되었습니다.", periodText,
+              request.getRank());
+          yield msg;
+        }
       };
 
       Notification notification = Notification.builder()
@@ -94,7 +104,7 @@ public class NotificationService {
         userId, direction, cursor, after, limit);
 
     // 사용자 정보 없음
-    if(!userRepository.existsById(userId)){
+    if (!userRepository.existsById(userId)) {
       throw new UserNotFoundException();
     }
 
@@ -144,19 +154,20 @@ public class NotificationService {
         .nextCursor(nextAfter)
         .nextAfter(nextAfter)
         .size(content.size())
-        .totalElements((int)totalElement)
+        .totalElements((int) totalElement)
         .hasNext(hasNext)
         .build();
   }
 
   @Transactional
-  public NotificationDto update(UUID notificationId, UUID userId, NotificationUpdateRequest request) {
+  public NotificationDto update(UUID notificationId, UUID userId,
+      NotificationUpdateRequest request) {
     Notification notification = notificationRepository.findById(notificationId)
-        .orElseThrow(()-> new NotificationNotFoundException(notificationId));
+        .orElseThrow(() -> new NotificationNotFoundException(notificationId));
     Review review = reviewRepository.findById(notification.getReviewId())
         .orElseThrow(ReviewNotFoundException::new);
 
-    if(!notification.getUserId().equals(userId)){
+    if (!notification.getUserId().equals(userId)) {
       throw new NotificationUnauthorizedException(userId);
     }
 
@@ -179,20 +190,21 @@ public class NotificationService {
   public void updateAll(UUID userId) {
     List<Notification> notifications = notificationRepository.findAllByUserId(userId);
 
-    if(notifications.isEmpty()){
+    if (notifications.isEmpty()) {
       // 사용자 정보 없음
-      if(!userRepository.existsById(userId)){
+      if (!userRepository.existsById(userId)) {
         throw new UserNotFoundException();
       }
     }
 
-    for(Notification n : notifications){
+    for (Notification n : notifications) {
       n.updateConfirmed(true);
     }
   }
 
   @Transactional
-  public void delete(){
-    notificationRepository.deleteAllByConfirmedTrueAndCreatedAtBefore(LocalDateTime.now().minusHours(1));
+  public void delete() {
+    notificationRepository.deleteAllByConfirmedTrueAndCreatedAtBefore(
+        LocalDateTime.now().minusHours(1));
   }
 }
