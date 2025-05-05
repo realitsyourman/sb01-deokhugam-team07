@@ -22,7 +22,7 @@ public class ApplicationScheduler {
   private final DashboardService dashboardService;
 
 
-  @Scheduled(cron = "0 13 19 * * *")
+  @Scheduled(cron = "0 0 15 * * *")
   public void deleteDashboard(){
     log.info("오전 3시 : 대시보드 일괄 삭제 시작");
     try {
@@ -33,7 +33,7 @@ public class ApplicationScheduler {
   }
 
 
-  @Scheduled(cron = "0 14 19 * * *")
+  @Scheduled(cron = "0 1 15 * * *")
   public void calculateAllDashboardData(){
     log.info("오전 3시 : 대시보드 데이터 일괄 계산 시작");
     // 순차 실행
