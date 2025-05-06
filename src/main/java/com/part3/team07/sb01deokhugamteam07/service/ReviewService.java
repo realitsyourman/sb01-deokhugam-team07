@@ -21,7 +21,6 @@ import com.part3.team07.sb01deokhugamteam07.repository.ReviewRepository;
 import com.part3.team07.sb01deokhugamteam07.repository.UserRepository;
 import com.part3.team07.sb01deokhugamteam07.type.ReviewDirection;
 import com.part3.team07.sb01deokhugamteam07.type.ReviewOrderBy;
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
