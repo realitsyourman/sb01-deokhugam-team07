@@ -162,7 +162,7 @@ public class ReviewService {
 
                     // 알림 생성
                     NotificationCreateRequest notificationRequest = NotificationCreateRequest.builder()
-                        .type(NotificationType.REVIEW_COMMENTED)
+                        .type(NotificationType.REVIEW_LIKED)
                         .senderId(userId)
                         .reviewId(reviewId)
                         .build();
