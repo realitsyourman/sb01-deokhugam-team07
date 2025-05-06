@@ -177,6 +177,9 @@ public class ReviewService {
                                                ReviewOrderBy orderBy, ReviewDirection direction,
                                                String cursor, LocalDateTime after,
                                                int limit, UUID requestUserId) {
+        log.debug("리뷰 목록 조회 시작. userId={}, bookId={}, keyword={}, orderBy={}, direction={}, cursor={}, after={}, limit={}, requestUserId={}",
+                userId, bookId, keyword, orderBy, direction, cursor, after, limit, requestUserId);
+
 
         List<ReviewDto> results = reviewRepository.findAll(userId, bookId, keyword, orderBy, direction, cursor, after, limit + 1, requestUserId);
 
@@ -187,6 +190,8 @@ public class ReviewService {
 
         String nextCursor = hasNext ? getCursorValue(pageContent.get(pageContent.size() - 1), orderBy) : null;
         LocalDateTime nextAfter = hasNext ? pageContent.get(pageContent.size() - 1).createdAt() : null;
+
+        log.info("리뷰 목록 조회 완료. 결과 수={}, hasNext={}, totalCount={}", pageContent.size(), hasNext, totalCount);
 
         return new CursorPageResponseReviewDto(pageContent, nextCursor, nextAfter, pageContent.size(), totalCount, hasNext);
     }
