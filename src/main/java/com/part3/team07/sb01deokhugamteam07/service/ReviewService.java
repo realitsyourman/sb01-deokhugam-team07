@@ -172,37 +172,23 @@ public class ReviewService {
                 });
     }
 
-    // ReviewService.java
     @Transactional(readOnly = true)
-    public CursorPageResponseReviewDto findAll(UUID userId, UUID bookId, String keyword, ReviewOrderBy orderBy,
-                                               ReviewDirection direction, String cursor, LocalDateTime after,
+    public CursorPageResponseReviewDto findAll(UUID userId, UUID bookId, String keyword,
+                                               ReviewOrderBy orderBy, ReviewDirection direction,
+                                               String cursor, LocalDateTime after,
                                                int limit, UUID requestUserId) {
 
-        log.debug("리뷰 목록 조회 시작: userId={}, bookId={}, keyword={}, orderBy={}, direction={}, cursor={}, after={}, limit={}, requestUserId={}",
-                userId, bookId, keyword, orderBy, direction, cursor, after, limit, requestUserId);
-
-        List<Tuple> results = reviewRepository.findAll(userId, bookId, keyword, orderBy, direction, cursor, after, limit + 1, requestUserId);
+        List<ReviewDto> results = reviewRepository.findAll(userId, bookId, keyword, orderBy, direction, cursor, after, limit + 1, requestUserId);
 
         boolean hasNext = results.size() > limit;
-        List<Tuple> pageContent = hasNext ? results.subList(0, limit) : results;
-        long countResult = reviewRepository.count(userId, bookId, keyword);
-        int totalCount = Math.toIntExact(countResult);
+        List<ReviewDto> pageContent = hasNext ? results.subList(0, limit) : results;
 
-        List<ReviewDto> dtoList = pageContent.stream()
-                .map(tuple -> {
-                    Review review = tuple.get(QReview.review);
-                    Like like = tuple.get(QLike.like);
-                    boolean likedByMe = like != null;
-                    return ReviewMapper.toDto(review, likedByMe);
-                })
-                .toList();
+        int totalCount = Math.toIntExact(reviewRepository.count(userId, bookId, keyword));
 
-        String nextCursor = hasNext ? getCursorValue(dtoList.get(dtoList.size() - 1), orderBy) : null;
-        LocalDateTime nextAfter = hasNext ? dtoList.get(dtoList.size() - 1).createdAt() : null;
+        String nextCursor = hasNext ? getCursorValue(pageContent.get(pageContent.size() - 1), orderBy) : null;
+        LocalDateTime nextAfter = hasNext ? pageContent.get(pageContent.size() - 1).createdAt() : null;
 
-        log.debug("리뷰 목록 조회 완료: 변환된 dto.size={}, hasNext={}, nextCursor={}", dtoList.size(), hasNext, nextCursor);
-
-        return new CursorPageResponseReviewDto(dtoList, nextCursor, nextAfter, dtoList.size(), totalCount, hasNext);
+        return new CursorPageResponseReviewDto(pageContent, nextCursor, nextAfter, pageContent.size(), totalCount, hasNext);
     }
 
     private String getCursorValue(ReviewDto dto, ReviewOrderBy orderBy) {
