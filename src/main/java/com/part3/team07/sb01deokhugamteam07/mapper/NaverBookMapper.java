@@ -8,8 +8,10 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class NaverBookMapper {
 
@@ -27,20 +29,29 @@ public class NaverBookMapper {
 
   private LocalDate parsePubDate(String pubdate) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-    return LocalDate.parse(pubdate, formatter);
+    try {
+      return LocalDate.parse(pubdate, formatter);
+    } catch (Exception e) {
+      log.warn("pubdate 파싱 실패: {}. Returning null.", pubdate, e);
+      return null;
+    }
   }
 
   private String extractIsbn13(String isbn) {
     return Arrays.stream(isbn.split(" "))
         .filter(s -> s.length() == 13)
         .findFirst()
-        .orElse(isbn);
+        .orElseGet(() -> {
+          log.warn("ISBN-13 추출 실패: {}", isbn);
+          return isbn;
+        });
   }
 
   private byte[] downloadThumbnail(String url) {
     try (InputStream in = new URL(url).openStream()) {
       return in.readAllBytes();
     } catch (IOException e) {
+      log.warn("thumbnail 다운로드 실패 URL: {}", url, e);
       return null;
     }
   }
