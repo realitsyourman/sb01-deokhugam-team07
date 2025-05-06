@@ -150,7 +150,7 @@ public class BookService {
       String cursor, LocalDateTime after, int size) {
     log.info("도서 목록 조회 요청이 시작. 키워드: {}, 정렬 필드: {}, 방향: {}, 페이지 크기: {}", keyword, orderBy, direction, size);
 
-    orderBy = orderBy != null ? orderBy : "publishedDate";
+    orderBy = orderBy != null ? orderBy : "title";
     direction = direction != null ? direction : "desc";
     size = size > 0 ? size : 50;
 

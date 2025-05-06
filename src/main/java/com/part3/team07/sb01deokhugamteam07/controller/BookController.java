@@ -110,8 +110,10 @@ public class BookController {
       @RequestParam(defaultValue = "50") int limit) {
     log.info("도서 목록 조회 요청: keyword={}, orderBy={}, direction={}, cursor={}, after={}, limit={}",
         keyword, orderBy, direction, cursor, after, limit);
+    
     CursorPageResponseBookDto bookDto = bookService.findAll(keyword, orderBy, direction, cursor,
         after, limit);
+    
     log.debug("도서 목록 조회 응답: {}", bookDto);
 
     return ResponseEntity
