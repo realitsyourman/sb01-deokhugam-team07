@@ -15,12 +15,12 @@ public class BookReviewScheduler {
 
   @Scheduled(cron = "0 0 * * * *")
   public void updateBookReviews() {
-    log.info("도서 리뷰 스탯 업데이트 스케쥴러 작업 시작.");
+    log.info("도서 리뷰 통계 업데이트 스케쥴러 작업 시작.");
     try {
       bookService.updateReviewStats();
-      log.info("도서 리뷰 스탯 업데이트 완료.");
+      log.info("도서 리뷰 통계 업데이트 완료.");
     } catch (Exception e) {
-      log.error("도서 리뷰 스탯 업데이트 중 오류 발생.", e);
+      log.error("도서 리뷰 통계 업데이트 중 오류 발생.", e);
     }
   }
 }
