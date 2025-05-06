@@ -14,6 +14,7 @@ import com.part3.team07.sb01deokhugamteam07.entity.KeyType;
 import com.part3.team07.sb01deokhugamteam07.entity.Period;
 import com.part3.team07.sb01deokhugamteam07.entity.Review;
 import com.part3.team07.sb01deokhugamteam07.entity.User;
+import com.part3.team07.sb01deokhugamteam07.entity.ValueType;
 import com.part3.team07.sb01deokhugamteam07.exception.book.BookNotFoundException;
 import com.part3.team07.sb01deokhugamteam07.repository.BookRepository;
 import com.part3.team07.sb01deokhugamteam07.repository.DashboardRepository;
@@ -42,6 +43,15 @@ public class DashboardService {
   private final UserRepository userRepository;
   private final ReviewRepository reviewRepository;
   private final BookRepository bookRepository;
+
+
+  /**
+   * 대시보드 삭제 기능
+   * **/
+  public void delete(){
+    dashboardRepository.deleteAll();
+  }
+
 
   /**
    * Power User 조회합니다.
@@ -102,7 +112,8 @@ public class DashboardService {
         .collect(Collectors.toMap(User::getId, user -> user));
 
     // 5. 사용자별 추가 지표 정보 (리뷰점수합, 좋아요수, 댓글수) 조회
-    List<UserMetricsDTO> userMetrics = dashboardRepository.getUserMetrics(period);
+    List<UserMetricsDTO> userMetrics = dashboardRepository.getUserMetrics(period.name());
+
     Map<UUID, UserMetricsDTO> metricsDTOMap = userMetrics.stream()
         .collect(Collectors.toMap(UserMetricsDTO::userId, Function.identity()));
 
@@ -111,8 +122,10 @@ public class DashboardService {
     for (Dashboard d : dashboards) {
       UUID userId = d.getKey();
       User user = userMap.get(userId);
+
       // 유저 지표 정보
       UserMetricsDTO metrics = metricsDTOMap.get(userId);
+
       BigDecimal reviewScoreSum =
           metrics != null && metrics.reviewScoreSum() != null ? metrics.reviewScoreSum() : BigDecimal.ZERO;
       int likeCount =
@@ -143,7 +156,7 @@ public class DashboardService {
     LocalDateTime nextAfter = hasNext ? dashboards.get(dashboards.size() - 1).getCreatedAt() : null;
 
     // 8. 전체 User 수 (기간 + USER 키타입 조건)
-    long totalElement = dashboardRepository.countByKeyTypeAndPeriod(KeyType.USER, period);
+    long totalElement = dashboardRepository.countByKeyTypeAndPeriodAndValueType(KeyType.USER, period, ValueType.SCORE);
 
     log.info("Power User 조회 완료: 총 {}명 중 {}명 반환, 다음 페이지: {}",
         totalElement, content.size(), hasNext);
@@ -152,7 +165,7 @@ public class DashboardService {
         content,
         nextCursor,
         nextAfter,
-        content.size(),
+        limit,
         totalElement,
         hasNext
     );
@@ -259,7 +272,7 @@ public class DashboardService {
         content,
         nextCursor,
         nextAfter,
-        content.size(),
+        limit,
         totalElement,
         hasNext
     );
@@ -354,7 +367,7 @@ public class DashboardService {
 
     // 6. 다음 페이지 커서 및 after 값 설정
     String nextCursor =
-        hasNext ? String.valueOf(dashboards.get(dashboards.get(dashboards.size() - 1).getRank()))
+        hasNext ? String.valueOf(dashboards.get(dashboards.size() - 1).getRank())
             : null;
     LocalDateTime nextAfter = hasNext ? dashboards.get(dashboards.size() - 1).getCreatedAt() : null;
 
@@ -367,7 +380,7 @@ public class DashboardService {
         content,
         nextCursor,
         nextAfter,
-        content.size(),
+        limit,
         totalElement,
         hasNext
     );

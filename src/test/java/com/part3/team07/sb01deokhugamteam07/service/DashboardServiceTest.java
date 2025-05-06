@@ -119,10 +119,10 @@ class DashboardServiceTest {
         eq(period), eq("ASC"), eq(null), eq(null), eq(limit + 1), eq(KeyType.USER))
     ).thenReturn(mockDashboards);
 
-    when(dashboardRepository.getUserMetrics(eq(period))).thenReturn(mockUserMetrics);
+    when(dashboardRepository.getUserMetrics(eq(period.name()))).thenReturn(mockUserMetrics);
 
-    when(dashboardRepository.countByKeyTypeAndPeriod(eq(KeyType.USER),
-        eq(Period.WEEKLY))).thenReturn(1L);
+    when(dashboardRepository.countByKeyTypeAndPeriodAndValueType(eq(KeyType.USER),
+        eq(Period.WEEKLY), eq(ValueType.SCORE))).thenReturn(1L);
 
     // when
     CursorPageResponsePowerUserDto result = dashboardService.getPowerUsers(
