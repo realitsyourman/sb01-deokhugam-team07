@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
 import com.part3.team07.sb01deokhugamteam07.entity.Book;
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @EnableJpaAuditing
 @ActiveProfiles("test")
-@Import({BookRepositoryCustomImpl.class, QuerydslConfig.class})
+@Import({BookRepositoryCustomImpl.class, QuerydslConfig.class, TitleNormalizer.class})
 class BookRepositoryTest {
 
   @Autowired

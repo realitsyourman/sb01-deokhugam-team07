@@ -2,10 +2,9 @@ package com.part3.team07.sb01deokhugamteam07.repository;
 
 import com.part3.team07.sb01deokhugamteam07.entity.Book;
 import com.part3.team07.sb01deokhugamteam07.entity.QBook;
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Repository;
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
+  private final TitleNormalizer titleNormalizer;
 
   @Override
   public List<Book> findBooksWithCursor(String keyword, String orderBy, String direction,
@@ -75,13 +75,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     }
   }
 
-  private StringExpression getNormalizedTitle(QBook book) {
-    return Expressions.stringTemplate(
-        "REGEXP_REPLACE(LOWER({0}), '[^가-힣a-z0-9]', '', 'g')",
-        book.title
-    );
-  }
-
   private String normalizeString(String input) {
     if (input == null) return null;
     return input.toLowerCase().replaceAll("[^가-힣a-z0-9]", "");
@@ -92,8 +85,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     switch (orderBy) {
       case "title":
         String normalizedCursor = normalizeString(cursor);
-        return getNormalizedTitle(book).gt(normalizedCursor).or(
-            getNormalizedTitle(book).eq(normalizedCursor).and(book.createdAt.lt(after))
+        return titleNormalizer.getNormalizedTitle(book.title).gt(normalizedCursor).or(
+            titleNormalizer.getNormalizedTitle(book.title).eq(normalizedCursor).and(book.createdAt.lt(after))
         );
       case "publishedDate":
         LocalDate cursorDate = LocalDate.parse(cursor);
@@ -120,8 +113,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     switch (orderBy) {
       case "title":
         String normalizedCursor = normalizeString(cursor);
-        return getNormalizedTitle(book).lt(normalizedCursor).or(
-            getNormalizedTitle(book).eq(normalizedCursor).and(book.createdAt.lt(after))
+        return titleNormalizer.getNormalizedTitle(book.title).lt(normalizedCursor).or(
+            titleNormalizer.getNormalizedTitle(book.title).eq(normalizedCursor).and(book.createdAt.lt(after))
         );
       case "publishedDate":
         LocalDate cursorDate = LocalDate.parse(cursor);
@@ -151,9 +144,9 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     switch (orderBy) {
       case "title":
         if (isAsc) {
-          primary = getNormalizedTitle(book).asc();
+          primary = titleNormalizer.getNormalizedTitle(book.title).asc();
         } else {
-          primary = getNormalizedTitle(book).desc();
+          primary = titleNormalizer.getNormalizedTitle(book.title).desc();
         }
         break;
       case "publishedDate":
