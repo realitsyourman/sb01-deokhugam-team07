@@ -1,17 +1,15 @@
 package com.part3.team07.sb01deokhugamteam07.repository;
 
-import com.part3.team07.sb01deokhugamteam07.entity.QBook;
-import com.part3.team07.sb01deokhugamteam07.entity.QLike;
-import com.part3.team07.sb01deokhugamteam07.entity.QReview;
-import com.part3.team07.sb01deokhugamteam07.entity.QUser;
+import com.part3.team07.sb01deokhugamteam07.dto.review.ReviewDto;
 import com.part3.team07.sb01deokhugamteam07.type.ReviewDirection;
 import com.part3.team07.sb01deokhugamteam07.type.ReviewOrderBy;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,13 +25,28 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<Tuple> findAll(UUID userId, UUID bookId, String keyword, ReviewOrderBy orderBy, ReviewDirection direction,
-                               String cursor, LocalDateTime after, int limit, UUID requestUserId) {
+    public List<ReviewDto> findAll(UUID userId, UUID bookId, String keyword, ReviewOrderBy orderBy, ReviewDirection direction,
+                                   String cursor, LocalDateTime after, int limit, UUID requestUserId) {
 
-        return queryFactory.select(review, like)
+        return queryFactory
+                .select(Projections.constructor(ReviewDto.class,
+                        review.id,
+                        book.id,
+                        book.title,
+                        book.thumbnailUrl,
+                        user.id,
+                        user.nickname,
+                        review.content,
+                        review.rating,
+                        review.likeCount,
+                        review.commentCount,
+                        like.id.isNotNull(),
+                        review.createdAt,
+                        review.updatedAt
+                ))
                 .from(review)
-                .join(review.user, user).fetchJoin()
-                .join(review.book, book).fetchJoin()
+                .join(review.user, user)
+                .join(review.book, book)
                 .leftJoin(like).on(
                         like.reviewId.eq(review.id)
                                 .and(like.userId.eq(requestUserId))
@@ -44,10 +57,11 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                         userIdEq(userId),
                         bookIdEq(bookId),
                         keywordContains(keyword),
-                        cursorCondition(cursor, after, orderBy)
+                        cursorCondition(cursor, after, orderBy, direction)
                 ))
-                .orderBy(primarySort(orderBy, direction), review.createdAt.desc())
-                .limit(limit + 1)
+                .orderBy(
+                        buildSortSpecifiers(orderBy, direction))
+                .limit(limit)
                 .fetch();
     }
 
@@ -60,27 +74,48 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     }
 
     private BooleanExpression keywordContains(String keyword) {
-        if (keyword == null || keyword.isBlank()) return null;
+        if (!StringUtils.hasText(keyword)) return null;
         return user.nickname.containsIgnoreCase(keyword)
                 .or(book.title.containsIgnoreCase(keyword))
                 .or(review.content.containsIgnoreCase(keyword));
     }
 
-    private BooleanExpression cursorCondition(String cursor, LocalDateTime after, ReviewOrderBy orderBy) {
-        if (orderBy == ReviewOrderBy.RATING && cursor != null && after != null) {
-            Integer rating = Integer.parseInt(cursor);
-            return review.rating.lt(rating)
-                    .or(review.rating.eq(rating).and(review.createdAt.lt(after)));
-        } else if (orderBy == ReviewOrderBy.CREATED_AT && after != null) {
-            return review.createdAt.lt(after);
-        }
-        return null;
+    private BooleanExpression cursorCondition(String cursor, LocalDateTime after, ReviewOrderBy orderBy, ReviewDirection direction) {
+        return switch (orderBy) {
+            case RATING -> ratingCursorCondition(cursor, after, direction);
+            case CREATED_AT -> createdAtCursorCondition(after, direction);
+        };
     }
 
-    private OrderSpecifier<?> primarySort(ReviewOrderBy orderBy, ReviewDirection direction) {
+    private BooleanExpression ratingCursorCondition(String cursor, LocalDateTime after, ReviewDirection direction) {
+        if (cursor == null || after == null) return null;
+
+        int rating = Integer.parseInt(cursor);
+        return switch (direction) {
+            case DESC -> review.rating.lt(rating)
+                    .or(review.rating.eq(rating).and(review.createdAt.lt(after)));
+            case ASC -> review.rating.gt(rating)
+                    .or(review.rating.eq(rating).and(review.createdAt.gt(after)));
+        };
+    }
+
+    private BooleanExpression createdAtCursorCondition(LocalDateTime after, ReviewDirection direction) {
+        if (after == null) return null;
+
+        return switch (direction) {
+            case DESC -> review.createdAt.lt(after);
+            case ASC -> review.createdAt.gt(after);
+        };
+    }
+
+    private OrderSpecifier<?>[] buildSortSpecifiers(ReviewOrderBy orderBy, ReviewDirection direction) {
         return switch (orderBy) {
-            case RATING -> direction == ReviewDirection.DESC ? review.rating.desc() : review.rating.asc();
-            case CREATED_AT -> direction == ReviewDirection.DESC ? review.createdAt.desc() : review.createdAt.asc();
+            case RATING -> direction == ReviewDirection.DESC
+                    ? new OrderSpecifier[]{review.rating.desc(), review.createdAt.desc()}
+                    : new OrderSpecifier[]{review.rating.asc(), review.createdAt.asc()};
+            case CREATED_AT -> direction == ReviewDirection.DESC
+                    ? new OrderSpecifier[]{review.createdAt.desc()}
+                    : new OrderSpecifier[]{review.createdAt.asc()};
         };
     }
 
@@ -99,5 +134,4 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
                 ))
                 .fetchOne();
     }
-
 }
