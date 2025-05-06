@@ -29,7 +29,7 @@ public class LogUploadScheduler {
     File logFile = new File(logPath);
 
     if (!logFile.exists()) {
-      log.warn("업로드할 로그 파일이 없습니다: {}", logPath);
+      log.warn("업로드할 로그 파일 없음: {}", logPath);
       return;
     }
 
