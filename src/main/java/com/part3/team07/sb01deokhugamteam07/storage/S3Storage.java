@@ -32,8 +32,10 @@ public class S3Storage implements Storage {
   @Override
   public String put(FileType type, String fileName, byte[] bytes) {
     String key = resolvePath(type, fileName);
+    log.info("S3 파일 업로드 시도 - key: {}, 타입: {}", key, type);
 
     if (type != FileType.LOG && exists(key)) {
+      log.warn("S3 업로드 실패 - 이미 존재하는 파일: {}", key);
       throw StorageAlreadyExistsException.withFileName(fileName);
     }
 
@@ -44,13 +46,16 @@ public class S3Storage implements Storage {
           .build();
 
       s3Client.putObject(request, RequestBody.fromBytes(bytes));
-
+      log.info("S3 파일 업로드 성공 - key: {}", key);
 
       if (type == FileType.THUMBNAIL_IMAGE) {
-        return getObjectUrl(key);
+        String url = getObjectUrl(key);
+        log.debug("S3 썸네일 이미지 URL 반환 - {}", url);
+        return url;
       }
       return null;
     } catch (AwsServiceException e) {
+      log.error("S3 업로드 실패 - key: {}, 오류: {}", key, e.getMessage(), e);
       throw StorageSaveFailedException.withFileName(fileName);
     }
   }
@@ -63,16 +68,21 @@ public class S3Storage implements Storage {
               .key(key)
               .build()
       );
+      log.debug("S3 객체 존재 확인 - 존재함: {}", key);
       return true;
     } catch (NoSuchKeyException e) {
+      log.debug("S3 객체 존재 확인 - 존재하지 않음: {}", key);
       return false;
     } catch (AwsServiceException e) {
+      log.error("S3 객체 존재 확인 실패 - key: {}, 오류: {}", key, e.getMessage(), e);
       throw StorageSaveFailedException.withFileName(key);
     }
   }
 
   public String resolvePath(FileType type, String fileName) {
-    return getSubDirByType(type) + "/" + fileName;
+    String path = getSubDirByType(type) + "/" + fileName;
+    log.debug("S3 저장 경로 생성 - 타입: {}, 파일명: {}, 경로: {}", type, fileName, path);
+    return path;
   }
 
   private String getSubDirByType(FileType type) {
@@ -83,6 +93,8 @@ public class S3Storage implements Storage {
   }
 
   private String getObjectUrl(String key) {
-    return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, key);
+    String url = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, key);
+    log.debug("S3 객체 URL 생성 - {}", url);
+    return url;
   }
 }
