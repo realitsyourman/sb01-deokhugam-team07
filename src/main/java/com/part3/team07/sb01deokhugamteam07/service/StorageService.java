@@ -20,14 +20,13 @@ public class StorageService {
   public String save(MultipartFile thumbnailImage, FileType fileType) {
     String fileName = generateFileName(thumbnailImage);
     try {
-      storage.put(fileType, fileName, thumbnailImage.getBytes());
+      String fileUrl  = storage.put(fileType, fileName, thumbnailImage.getBytes());
       log.info("파일 저장 성공 - 파일명: {}, 파일 유형: {}", fileName, fileType);
+      return fileUrl;
     } catch (IOException e) {
       log.error("파일 저장 실패 - 파일명: {}, 오류: {}", fileName, e.getMessage(), e);
       throw StorageSaveFailedException.withFileName(fileName);
     }
-
-    return fileName;
   }
 
   private String generateFileName(MultipartFile file) {
