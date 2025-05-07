@@ -46,7 +46,10 @@ public class BookService {
   @Transactional
   public BookDto create(BookCreateRequest request,
       MultipartFile thumbnailImage) {
+    log.info("도서 생성 요청 시작. ISBN: {}", request.isbn());
+
     if (bookRepository.existsByIsbn(request.isbn())) {
+      log.error("도서 생성 실패: 이미 존재하는 ISBN {}.", request.isbn());
       throw BookAlreadyExistsException.withIsbn(request.isbn());
     }
     String thumbnailUrl = Optional.ofNullable(thumbnailImage)
@@ -64,18 +67,25 @@ public class BookService {
         .build();
     Book savedBook = bookRepository.save(book);
 
+    log.info("도서 생성 성공: {}", savedBook.getId());
     return bookMapper.toDto(savedBook);
   }
 
   public NaverBookDto getInfo(String isbn) {
+    log.info("ISBN {}로 책 정보 조회.", isbn);
 
     return naverBookClient.searchByIsbn(isbn);
   }
 
   @Transactional
   public BookDto update(UUID id, BookUpdateRequest request, MultipartFile thumbnailImage) {
+    log.info("도서 업데이트 요청 시작. ID: {}", id);
+
     Book book = bookRepository.findById(id)
-        .orElseThrow(() -> BookNotFoundException.withId(id));
+        .orElseThrow(() -> {
+          log.error("도서 업데이트 실패: 존재하지 않는 ID {}", id);
+          return BookNotFoundException.withId(id);
+        });
     String thumbnailUrl = Optional.ofNullable(thumbnailImage)
         .map(image -> storageService.save(image, FileType.THUMBNAIL_IMAGE))
         .orElse(null);
@@ -87,38 +97,59 @@ public class BookService {
     Optional.ofNullable(request.publishedDate()).ifPresent(book::updatePublishDate);
     Optional.ofNullable(thumbnailUrl).ifPresent(book::updateThumbnailUrl);
 
+    log.info("도서 업데이트 성공: ID {}", book.getId());
     return bookMapper.toDto(book);
   }
 
   @Transactional
   public void softDelete(UUID id) {
+    log.info("도서 논리 삭제 요청 시작. ID: {}", id);
+
     Book book = bookRepository.findById(id)
-        .orElseThrow(() -> BookNotFoundException.withId(id));
+        .orElseThrow(() -> {
+          log.error("도서 논리 삭제 실패: 존재하지 않는 ID {}", id);
+          return BookNotFoundException.withId(id);
+        });
 
     book.softDelete();
     reviewService.softDeleteAllByBook(book);
+
+    log.info("도서 논리 삭제 성공: ID {}", book.getId());
   }
 
   @Transactional
   public void hardDelete(UUID id) {
+    log.info("도서 물리 삭제 요청 시작. ID: {}", id);
+
     if (!bookRepository.existsById(id)) {
+      log.error("도서 물리 삭제 실패: 존재하지 않는 ID {}", id);
       throw BookNotFoundException.withId(id);
     }
 
     bookRepository.deleteById(id);
+
+    log.info("도서 물리 삭제 성공: ID {}", id);
   }
 
   @Transactional(readOnly = true)
   public BookDto find(UUID id) {
-    Book book = bookRepository.findById(id)
-        .orElseThrow(() -> BookNotFoundException.withId(id));
+    log.info("도서 조회 요청 시작. ID: {}", id);
 
+    Book book = bookRepository.findById(id)
+        .orElseThrow(() -> {
+          log.error("도서 조회 실패: 존재하지 않는 ID {}", id);
+          return BookNotFoundException.withId(id);
+        });
+
+    log.info("도서 조회 성공: ID {}", book.getId());
     return bookMapper.toDto(book);
   }
 
   @Transactional(readOnly = true)
   public CursorPageResponseBookDto findAll(String keyword, String orderBy, String direction,
       String cursor, LocalDateTime after, int size) {
+    log.info("도서 목록 조회 요청이 시작. 키워드: {}, 정렬 필드: {}, 방향: {}, 페이지 크기: {}", keyword, orderBy, direction, size);
+
     orderBy = orderBy != null ? orderBy : "title";
     direction = direction != null ? direction : "desc";
     size = size > 0 ? size : 50;
@@ -148,6 +179,8 @@ public class BookService {
 
     long totalElements = bookRepository.countByKeyword(keyword);
 
+    log.info("도서 목록 조회 성공. 전체 개수: {}", totalElements);
+
     return new CursorPageResponseBookDto(
         bookDtos,
         nextCursor,
@@ -160,6 +193,8 @@ public class BookService {
 
   @Transactional
   public void updateReviewStats() {
+    log.info("도서 리뷰 통계 업데이트 시작.");
+
     List<Book> books = bookRepository.findAll();
 
     for (Book book : books) {
@@ -179,8 +214,9 @@ public class BookService {
       );
 
       int reviewCount = reviews.size();
-
       book.updateReviewStats(reviewCount, average);
+
+      log.info("도서 리뷰 통계 업데이트 성공: ID {}", book.getId());
     }
   }
 
@@ -197,6 +233,7 @@ public class BookService {
   private void validateSortField(String sortField) {
     List<String> validSortFields = List.of("title", "publishedDate", "rating", "reviewCount");
     if (!validSortFields.contains(sortField)) {
+      log.error("잘못된 정렬 필드: {}", sortField);
       throw InvalidSortFieldException.withField(sortField);
     }
   }

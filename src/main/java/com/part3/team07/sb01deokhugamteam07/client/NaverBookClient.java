@@ -7,6 +7,7 @@ import com.part3.team07.sb01deokhugamteam07.mapper.NaverBookMapper;
 import java.net.URI;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class NaverBookClient {
@@ -28,6 +30,8 @@ public class NaverBookClient {
   private String clientSecret;
 
   public NaverBookDto searchByIsbn(String isbn) {
+    log.info("Naver API 도서 검색: isbn={}", isbn);
+
     URI uri = UriComponentsBuilder
         .fromUriString("https://openapi.naver.com")
         .path("/v1/search/book_adv.xml")
@@ -47,6 +51,7 @@ public class NaverBookClient {
         .map(NaverBookRssResponse::getItems)
         .flatMap(items -> items.stream().findFirst())
         .orElseThrow(() -> BookNotFoundException.withIsbn(isbn));
+    log.info("Naver API 도서 검색 결과: {}", item);
 
     return naverBookMapper.toDto(item);
   }
