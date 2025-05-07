@@ -54,7 +54,7 @@ public class LocalStorage implements Storage {
       try (OutputStream outputStream = Files.newOutputStream(filePath, StandardOpenOption.CREATE_NEW)) {
         outputStream.write(bytes);
         log.info("파일 저장 성공 - 경로: {}", filePath);
-        return filePath.toString();
+        return "/storage/" + getSubDirByType(type) + "/" + fileName;
       }
     } catch (FileAlreadyExistsException e) {
       log.warn("파일 저장 실패 - 이미 존재하는 파일: {}", filePath);

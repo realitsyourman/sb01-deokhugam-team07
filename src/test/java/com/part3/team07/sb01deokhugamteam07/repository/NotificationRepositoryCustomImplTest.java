@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
 import com.part3.team07.sb01deokhugamteam07.entity.Notification;
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
@@ -22,7 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @EnableJpaAuditing
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class, TitleNormalizer.class})
 @ActiveProfiles("test")
 class NotificationRepositoryCustomImplTest {
 

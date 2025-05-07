@@ -132,7 +132,8 @@ public class SecurityConfig {
         .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
         .requestMatchers("/static/**", "/assets/**")
         .requestMatchers("/index.html")
-        .requestMatchers("/favicon-32x32.png");
+        .requestMatchers("/favicon-32x32.png")
+        .requestMatchers("/storage/**");
   }
 
   /**
