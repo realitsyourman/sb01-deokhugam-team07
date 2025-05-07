@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
 import com.part3.team07.sb01deokhugamteam07.entity.Notification;
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @EnableJpaAuditing
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class, TitleNormalizer.class})
 @ActiveProfiles("test")
 class NotificationRepositoryTest {
 

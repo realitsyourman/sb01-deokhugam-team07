@@ -3,6 +3,7 @@ package com.part3.team07.sb01deokhugamteam07.repository;
 import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
 import com.part3.team07.sb01deokhugamteam07.entity.*;
 
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import java.math.BigDecimal;
 
 import com.part3.team07.sb01deokhugamteam07.type.ReviewDirection;
@@ -26,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @EnableJpaAuditing
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class, TitleNormalizer.class})
 @ActiveProfiles("test")
 class ReviewRepositoryTest {
 

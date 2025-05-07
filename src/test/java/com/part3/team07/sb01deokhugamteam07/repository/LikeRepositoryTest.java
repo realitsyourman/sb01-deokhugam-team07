@@ -2,6 +2,7 @@ package com.part3.team07.sb01deokhugamteam07.repository;
 
 import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
 import com.part3.team07.sb01deokhugamteam07.entity.Like;
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @EnableJpaAuditing
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class, TitleNormalizer.class})
 @ActiveProfiles("test")
 class LikeRepositoryTest {
 

@@ -9,6 +9,7 @@ import com.part3.team07.sb01deokhugamteam07.entity.Comment;
 import com.part3.team07.sb01deokhugamteam07.entity.Review;
 import com.part3.team07.sb01deokhugamteam07.entity.User;
 import com.part3.team07.sb01deokhugamteam07.exception.comment.InvalidCommentQueryException;
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @EnableJpaAuditing
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class, TitleNormalizer.class})
 @ActiveProfiles("test")
 class CommentRepositoryCustomImplTest {
 
