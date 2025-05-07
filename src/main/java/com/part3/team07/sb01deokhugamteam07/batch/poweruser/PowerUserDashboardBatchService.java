@@ -56,10 +56,9 @@ public class PowerUserDashboardBatchService {
       }
 
       // 날짜 범위 계산
-      LocalDate[] dateRange = dateRangeUtil.getDateRange(period);
-      LocalDateTime startDateTime = dateRange[0].atStartOfDay();
-      LocalDateTime endDateTime = dateRange[1].plusDays(1).atStartOfDay()
-          .minusNanos(1); // e.g. 일요일 25-04-20 00:00:00 + 하루 더하기 - 나노초 빼기 -> 종료일의 마지막 순간
+      LocalDateTime[] dateTimeRange  = dateRangeUtil.getDateRange(period);
+      LocalDateTime startDateTime = dateTimeRange[0];
+      LocalDateTime endDateTime = dateTimeRange[1];
 
       // 결과 저장용 대시보드 리스트, 유저 점수 맵
       List<Dashboard> dashboards = new ArrayList<>();

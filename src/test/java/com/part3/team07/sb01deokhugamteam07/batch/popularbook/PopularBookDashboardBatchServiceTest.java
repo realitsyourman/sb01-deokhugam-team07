@@ -58,10 +58,11 @@ class PopularBookDashboardBatchServiceTest {
     Period period = Period.WEEKLY;
 
     // Period 설정
-    LocalDate[] dateRange = new LocalDate[]{
-        LocalDate.of(2025, 4, 15),
-        LocalDate.of(2025, 4, 21),
+    LocalDateTime[] dateRange = new LocalDateTime[]{
+        LocalDateTime.of(2025, 4, 15, 0, 0),
+        LocalDateTime.of(2025, 4, 21, 0, 0),
     };
+
 
     // 도서 설정
     UUID bookId1 = UUID.randomUUID();
