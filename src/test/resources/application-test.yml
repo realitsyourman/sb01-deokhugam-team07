@@ -42,10 +42,15 @@ deokhugam:
   storage:
     type: local # local | s3
     local:
-      root-path: src/main/resources/static/storage
+      root-path: src/test/resources/static/storage
 
 jwt:
   security:
     jwt-secret: tRsLycvAv+NdFne3uTGzRHlH4XNXGP2v/6QW5dCT0Fs=
     jwt-expiration: 3600000
     jwt-issuer: deokhugam
+
+naver:
+  book:
+    client-id:
+    client-secret:

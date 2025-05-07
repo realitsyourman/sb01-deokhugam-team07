@@ -1,7 +1,3 @@
-CREATE TYPE period AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME');
-CREATE TYPE value_type AS ENUM ('SCORE', 'REVIEW_SCORE_SUM', 'LIKE_COUNT', 'COMMENT_COUNT');
-CREATE TYPE key_type AS ENUM ('USER', 'BOOK', 'REVIEW');
-
 CREATE TABLE users
 (
     id         UUID PRIMARY KEY,
@@ -10,7 +6,7 @@ CREATE TABLE users
     is_deleted BOOLEAN             NOT NULL DEFAULT FALSE,
     email      VARCHAR(255) UNIQUE NOT NULL,
     nickname   VARCHAR(20)         NOT NULL,
-    password   VARCHAR(20)         NOT NULL
+    password   VARCHAR(255)         NOT NULL
 );
 
 CREATE TABLE books
@@ -25,7 +21,7 @@ CREATE TABLE books
     publisher           VARCHAR(255)  NOT NULL,
     publish_date        DATE          NOT NULL,
     isbn                VARCHAR(255) UNIQUE,
-    thumbnail_file_name TEXT,
+    thumbnail_url TEXT,
     review_count        INTEGER       NOT NULL DEFAULT 0,
     rating              DECIMAL(2, 1) NOT NULL DEFAULT 0.0
 );
@@ -79,7 +75,9 @@ CREATE TABLE likes
     id         UUID PRIMARY KEY,
     user_id    UUID NOT NULL,
     review_id  UUID NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_DATE,
+    is_deleted BOOLEAN             NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP     NOT NULL,
+    updated_at TIMESTAMP,
     CONSTRAINT unique_review_like UNIQUE (user_id, review_id)
 );
 
@@ -89,10 +87,10 @@ CREATE TABLE dashboards
     created_at TIMESTAMP     NOT NULL,
     updated_at TIMESTAMP,
     "key"      UUID          NOT NULL,
-    key_type   key_type      NOT NULL,
-    period     period        NOT NULL,
+    key_type   VARCHAR(255)      NOT NULL,
+    period     VARCHAR(255)        NOT NULL,
     "value"    DECIMAL(5, 2) NOT NULL,
-    value_type value_type    NOT NULL,
+    value_type VARCHAR(255)    NOT NULL,
     rank       INTEGER
 );
 

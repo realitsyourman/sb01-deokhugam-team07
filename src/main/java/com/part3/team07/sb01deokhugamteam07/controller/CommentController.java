@@ -3,13 +3,17 @@ package com.part3.team07.sb01deokhugamteam07.controller;
 import com.part3.team07.sb01deokhugamteam07.dto.comment.CommentDto;
 import com.part3.team07.sb01deokhugamteam07.dto.comment.request.CommentCreateRequest;
 import com.part3.team07.sb01deokhugamteam07.dto.comment.request.CommentUpdateRequest;
+import com.part3.team07.sb01deokhugamteam07.dto.comment.response.CursorPageResponseCommentDto;
 import com.part3.team07.sb01deokhugamteam07.service.CommentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -65,4 +70,47 @@ public class CommentController {
         .body(findComment);
   }
 
+  @DeleteMapping(value = "/{commentId}")
+  public ResponseEntity<Void> softDelete(
+      @PathVariable UUID commentId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID userId
+  ) {
+    log.info("soft delete comment request: commentId = {}, userId = {}", commentId, userId);
+    commentService.softDelete(commentId, userId);
+    log.debug("soft delete comment success");
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
+
+  @DeleteMapping(value = "/{commentId}/hard")
+  public ResponseEntity<Void> hardDelete(
+      @PathVariable UUID commentId,
+      @RequestHeader("Deokhugam-Request-User-ID") UUID userId
+  ) {
+    log.info("hard delete comment request: commentId = {}, userId = {}", commentId, userId);
+    commentService.hardDelete(commentId, userId);
+    log.debug("hard delete comment success");
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
+
+  @GetMapping
+  public ResponseEntity<CursorPageResponseCommentDto> findCommentsByReviewId(
+      @RequestParam @NotNull UUID reviewId,
+      @RequestParam(required = false, defaultValue = "DESC") String direction,
+      @RequestParam(required = false) String cursor,
+      @RequestParam(required = false) LocalDateTime after,
+      @RequestParam(defaultValue = "50") int limit
+  ) {
+    log.info("find comments by review request: cursor = {}", cursor);
+    CursorPageResponseCommentDto response = commentService.findCommentsByReviewId(
+        reviewId, direction, cursor, after, limit
+    );
+    log.debug("find comments by review success");
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(response);
+  }
 }

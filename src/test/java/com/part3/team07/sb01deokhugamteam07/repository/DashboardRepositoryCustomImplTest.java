@@ -1,15 +1,19 @@
 package com.part3.team07.sb01deokhugamteam07.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
 import com.part3.team07.sb01deokhugamteam07.entity.Dashboard;
 import com.part3.team07.sb01deokhugamteam07.entity.KeyType;
 import com.part3.team07.sb01deokhugamteam07.entity.Period;
 import com.part3.team07.sb01deokhugamteam07.entity.ValueType;
+import com.part3.team07.sb01deokhugamteam07.util.TitleNormalizer;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,10 +23,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
 
 @DataJpaTest
+@EnableJpaAuditing
+@Import({QuerydslConfig.class, TitleNormalizer.class})
 @ActiveProfiles("test")
 class DashboardRepositoryCustomImplTest {
 
@@ -45,58 +53,132 @@ class DashboardRepositoryCustomImplTest {
     dashboardRepositoryCustom = new DashboardRepositoryCustomImpl(queryFactory);
 
     // 테스트용 데이터 삽입
-    for (int i = 1; i <= 40; i++) {
+    for (int i = 1; i <= 20; i++) {
       Dashboard dashboard = Dashboard.builder()
           .key(UUID.randomUUID())
           .keyType(KeyType.USER)
           .period(Period.DAILY)
-          .value(90 - i)
+          .value(BigDecimal.valueOf(90 - i))
           .rank(i)
           .valueType(ValueType.SCORE)
           .build();
 
       testEntityManager.persist(dashboard);
     }
-    Dashboard tiedDashboard = Dashboard.builder() // 동점자 처리 테스트 용
-        .key(UUID.randomUUID())
-        .keyType(KeyType.USER)
-        .period(Period.DAILY)
-        .value(60)
-        .rank(30)
-        .valueType(ValueType.SCORE)
-        .build();
-    testEntityManager.persist(tiedDashboard);
+    for (int i = 1; i <= 20; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.REVIEW)
+          .period(Period.DAILY)
+          .value(BigDecimal.valueOf(90 - i))
+          .rank(i)
+          .valueType(ValueType.SCORE)
+          .build();
 
-    for (int i = 1; i <= 30; i++) {
+      testEntityManager.persist(dashboard);
+    }
+    for (int i = 1; i <= 20; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.BOOK)
+          .period(Period.DAILY)
+          .value(BigDecimal.valueOf(90 - i))
+          .rank(i)
+          .valueType(ValueType.SCORE)
+          .build();
+
+      testEntityManager.persist(dashboard);
+    }
+    for (int i = 1; i <= 20; i++) {
       Dashboard dashboard = Dashboard.builder()
           .key(UUID.randomUUID())
           .keyType(KeyType.USER)
           .period(Period.WEEKLY)
-          .value(90 - i)
+          .value(BigDecimal.valueOf(90 - i))
           .rank(i)
           .valueType(ValueType.SCORE)
           .build();
 
       testEntityManager.persist(dashboard);
     }
-    for (int i = 1; i <= 30; i++) {
+    for (int i = 1; i <= 20; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.REVIEW)
+          .period(Period.WEEKLY)
+          .value(BigDecimal.valueOf(90 - i))
+          .rank(i)
+          .valueType(ValueType.SCORE)
+          .build();
+
+      testEntityManager.persist(dashboard);
+    }
+    for (int i = 1; i <= 20; i++) {
       Dashboard dashboard = Dashboard.builder()
           .key(UUID.randomUUID())
           .keyType(KeyType.USER)
           .period(Period.MONTHLY)
-          .value(90 - i)
+          .value(BigDecimal.valueOf(90 - i))
           .rank(i)
           .valueType(ValueType.SCORE)
           .build();
 
       testEntityManager.persist(dashboard);
     }
-    for (int i = 1; i <= 30; i++) {
+    for (int i = 1; i <= 10; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.REVIEW)
+          .period(Period.MONTHLY)
+          .value(BigDecimal.valueOf(90 - i))
+          .rank(i)
+          .valueType(ValueType.SCORE)
+          .build();
+
+      testEntityManager.persist(dashboard);
+    }
+    for (int i = 1; i <= 10; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.BOOK)
+          .period(Period.WEEKLY)
+          .value(BigDecimal.valueOf(90 - i))
+          .rank(i)
+          .valueType(ValueType.SCORE)
+          .build();
+
+      testEntityManager.persist(dashboard);
+    }
+    for (int i = 1; i <= 10; i++) {
       Dashboard dashboard = Dashboard.builder()
           .key(UUID.randomUUID())
           .keyType(KeyType.USER)
           .period(Period.ALL_TIME)
-          .value(90 - i)
+          .value(BigDecimal.valueOf(90 - i))
+          .rank(i)
+          .valueType(ValueType.SCORE)
+          .build();
+
+      testEntityManager.persist(dashboard);
+    }
+    for (int i = 1; i <= 10; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.REVIEW)
+          .period(Period.ALL_TIME)
+          .value(BigDecimal.valueOf(90 - i))
+          .rank(i)
+          .valueType(ValueType.SCORE)
+          .build();
+
+      testEntityManager.persist(dashboard);
+    }
+    for (int i = 1; i <= 10; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.BOOK)
+          .period(Period.ALL_TIME)
+          .value(BigDecimal.valueOf(90 - i))
           .rank(i)
           .valueType(ValueType.SCORE)
           .build();
@@ -109,17 +191,34 @@ class DashboardRepositoryCustomImplTest {
     entityManager.clear();
   }
 
-  /**
-   * limit 이 11 인 이유는 서비스 단에서 hasNext 를 위해 limit + 1 값을 전달하기 때문입니다.
-   **/
+  @Test
+  @DisplayName("KeyType 의 조건에 따라 대시보드를 조회해오는지 확인")
+  public void find_Dashboards_By_KeyType() {
+    for (KeyType keyType : KeyType.values()) {
+      List<Dashboard> page = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(
+          Period.DAILY,
+          "asc", null, null, 11, keyType);
+      assertThat(page).allMatch(dashboard -> dashboard.getKeyType() == keyType);
+    }
+  }
 
   @Test
-  @DisplayName("Daily 기간에 대해 데이터 조회")
-  public void testfindPowerUsersByDailyWithCursor() {
+  @DisplayName("Period 의 조건에 따라 대시보드를 조회해오는지 확인")
+  public void find_Dashboards_By_Period() {
+    for (Period period : Period.values()) {
+      List<Dashboard> page = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(period,
+          "asc", null, null, 11, KeyType.BOOK);
+      assertThat(page).allMatch(dashboard -> dashboard.getPeriod() == period);
+    }
+  }
+
+  @Test
+  @DisplayName("페이지네이션 동작 여부 확인")
+  public void test_Pagination_Limit() {
 
     // 첫 번째 페이지
-    List<Dashboard> firstPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.DAILY,
-        "asc", null, null, 11);
+    List<Dashboard> firstPage = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(Period.DAILY,
+        "asc", null, null, 11, KeyType.USER);
 
     assertEquals(11, firstPage.size());
     for (int i = 0; i < firstPage.size() - 1; i++) {
@@ -127,133 +226,107 @@ class DashboardRepositoryCustomImplTest {
           "랭킹 오름차순 정렬");
     }
 
-
     // 두 번째 페이지
     String cursor = String.valueOf(firstPage.get(firstPage.size() - 1).getRank());
-    List<Dashboard> secondPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.DAILY,
-        "asc", cursor, null, 11);
+    String after = String.valueOf(firstPage.get(firstPage.size() - 1).getCreatedAt());
+    List<Dashboard> secondPage = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(Period.DAILY,
+        "asc", cursor, after, 11, KeyType.USER);
 
     // cursor 이후의 데이터가 반환되는지 확인
     assertTrue(secondPage.get(0).getRank() >= firstPage.get(firstPage.size() - 1).getRank(),
-        "두 번째 페이지의 첫 번째 항목은 첫 페이지의 마지막 항목보다 rank가 커야 함");
-  }
-
-  @Test
-  @DisplayName("Weekly 기간에 대해 데이터 조회")
-  public void testfindPowerUsersByWeekly() {
-    List<Dashboard> firstPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.WEEKLY,
-        "asc", null, null, 11);
-
-    assertEquals(11, firstPage.size());
-    for (int i = 0; i < firstPage.size() - 1; i++) {
-      assertTrue(firstPage.get(i).getRank() < firstPage.get(i + 1).getRank(),
-          "랭킹 오름차순 정렬");
-    }
-
-    // 두 번째 페이지
-    String cursor = String.valueOf(firstPage.get(firstPage.size() - 1).getRank());
-    List<Dashboard> secondPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.WEEKLY,
-        "asc", cursor, null, 11);
-
-    // cursor 이후의 데이터가 반환되는지 확인
-    assertTrue(secondPage.get(0).getRank() >= firstPage.get(firstPage.size() - 1).getRank(),
-        "두 번째 페이지의 첫 번째 항목은 첫 페이지의 마지막 항목보다 rank가 커야 함");
-
-  }
-
-  @Test
-  @DisplayName("Monthly 기간에 대해 데이터 조회")
-  public void testfindPowerUsersByMonthly() {
-    // Monthly 기간에 대해 데이터 조회
-    List<Dashboard> firstPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.MONTHLY,
-        "asc", null, null, 11);
-
-    assertEquals(11, firstPage.size());
-    for (int i = 0; i < firstPage.size() - 1; i++) {
-      assertTrue(firstPage.get(i).getRank() < firstPage.get(i + 1).getRank(),
-          "랭킹 오름차순 정렬");
-    }
-
-    // 두 번째 페이지
-    String cursor = String.valueOf(firstPage.get(firstPage.size() - 1).getRank());
-    List<Dashboard> secondPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.MONTHLY,
-        "asc", cursor, null, 11);
-
-    // cursor 이후의 데이터가 반환되는지 확인
-    assertTrue(secondPage.get(0).getRank() > firstPage.get(firstPage.size() - 1).getRank(),
-        "두 번째 페이지의 첫 번째 항목은 첫 페이지의 마지막 항목보다 rank가 커야 함");
-  }
-
-  @Test
-  @DisplayName("AllTime 기간에 대해 데이터 조회")
-  public void testfindPowerUsersByAllTime() {
-    // Monthly 기간에 대해 데이터 조회
-    List<Dashboard> firstPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.ALL_TIME,
-        "asc", null, null, 11);
-
-    assertEquals(11, firstPage.size());
-    for (int i = 0; i < firstPage.size() - 1; i++) {
-      assertTrue(firstPage.get(i).getRank() < firstPage.get(i + 1).getRank(),
-          "랭킹 오름차순 정렬");
-    }
-
-    // 두 번째 페이지
-    String cursor = String.valueOf(firstPage.get(firstPage.size() - 1).getRank());
-    List<Dashboard> secondPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.ALL_TIME,
-        "asc", cursor, null, 11);
-
-    // cursor 이후의 데이터가 반환되는지 확인
-    assertTrue(secondPage.get(0).getRank() > firstPage.get(firstPage.size() - 1).getRank(),
         "두 번째 페이지의 첫 번째 항목은 첫 페이지의 마지막 항목보다 rank가 커야 함");
   }
 
   @Test
   @DisplayName("동점자(rank 중복) 존재 시에도 페이지네이션 동작")
   public void test_Find_PowerUser_with_Tied_Ranks() {
+    Dashboard tiedDashboard = Dashboard.builder() // 동점자 처리 테스트 용
+        .key(UUID.randomUUID())
+        .keyType(KeyType.USER)
+        .period(Period.DAILY)
+        .value(BigDecimal.valueOf(70))
+        .rank(20)
+        .valueType(ValueType.SCORE)
+        .build();
+
+    testEntityManager.persist(tiedDashboard);
+
+    for (int i = 1; i <= 10; i++) {
+      Dashboard dashboard = Dashboard.builder()
+          .key(UUID.randomUUID())
+          .keyType(KeyType.USER)
+          .period(Period.DAILY)
+          .value(BigDecimal.valueOf(70 - i))
+          .rank(21 + i) // 20 등이 2명 일시, 그 다음 사람은 22 -> 20 20 22
+          .valueType(ValueType.SCORE)
+          .build();
+
+      testEntityManager.persist(dashboard);
+
+    }
+
+    // 영속성 컨텍스트 초기화
+    entityManager.flush();
+    entityManager.clear();
+
     // 첫 페이지
-    List<Dashboard> firstPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.DAILY,
-        "asc", null, null, 31); // 동점자 포함해서 rank=30이 2개이므로 31까지 조회
+    List<Dashboard> firstPage = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(
+        Period.DAILY,
+        "asc", null, null, 21, KeyType.USER); // 동점자 포함해서 rank=20이 2개이므로 21까지 조회
 
-    assertEquals(31, firstPage.size(), "동점자 포함 31개 조회되어야 함");
+    assertEquals(21, firstPage.size(), "동점자 포함 21개 조회되어야 함");
 
-    List<Dashboard> rank30DashBoards = firstPage.stream().filter(d -> d.getRank() == 30).toList();
+    List<Dashboard> rank30DashBoards = firstPage.stream().filter(d -> d.getRank() == 20).toList();
     assertEquals(2, rank30DashBoards.size(), "rank=30 인 Dashboard 가 2개 있어야 함 (동점자)");
     assertTrue(
         rank30DashBoards.get(0).getCreatedAt().isBefore(rank30DashBoards.get(1).getCreatedAt()),
         "먼저 만든 rank=30이 먼저 나와야 함 (createdAt 기준)");
 
-    // 두 번째 페이지 조회 : cursor 를 rank = 30 으로 하면 동점자 이후로 넘어가는지 확ㅇ니
-    String cursor = String.valueOf(30);
-    List<Dashboard> secondPage = dashboardRepositoryCustom.findPowerUsersByPeriod(Period.DAILY,
-        "asc", cursor, null, 10);
+    // 두 번째 페이지 조회 : cursor 를 rank = 20 으로 하면 동점자 이후로 넘어가는지 확인
+    String cursor = String.valueOf(20);
+    String after = String.valueOf(firstPage.get(firstPage.size() - 1).getCreatedAt());
+    List<Dashboard> secondPage = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(
+        Period.DAILY,
+        "asc", cursor, after, 10, KeyType.USER);
 
-    assertTrue(secondPage.stream().allMatch(d -> d.getRank() > 30),
-        "두 번째 페이지에는 rank=30보다 큰 값만 있어야 함");
+    assertTrue(secondPage.stream().allMatch(d -> d.getRank() > 20),
+        "두 번째 페이지에는 rank=20보다 큰 값만 있어야 함");
   }
 
   @Test
-  @DisplayName("커서와 after 파라미터가 올바르게 동작")
-  public void testCursorAndAfterParameters() {
-    List<Dashboard> firstPage = dashboardRepositoryCustom.findPowerUsersByPeriod(
-        Period.DAILY, "asc", null, null, 30);
-
-    // 중복되는 랭크를 가져온다
-    Dashboard duplicateRank = firstPage.stream()
-        .filter(d -> d.getRank() == 30)
-        .findFirst()
-        .orElseThrow();
-
-    String cursor = String.valueOf(duplicateRank.getRank());
-    String after = duplicateRank.getCreatedAt().toString();
-
-    List<Dashboard> secondPage = dashboardRepositoryCustom.findPowerUsersByPeriod(
-        Period.DAILY, "asc", cursor, after, 30);
-
-    assertTrue(secondPage.stream().anyMatch(d ->
-        d.getRank() > duplicateRank.getRank() ||
-            (d.getRank() == duplicateRank.getRank() &&
-                d.getCreatedAt().isAfter(duplicateRank.getCreatedAt()))
-    ));
+  @DisplayName("잘못된 커서 값이 들어온 경우 기본값 처리 확인")
+  public void test_Invalid_Cursor_Value() {
+    List<Dashboard> result = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(
+        Period.DAILY, "asc", "invalid_cursor", null, 10, KeyType.USER);
+    assertEquals(result.get(0).getRank(), 1);
   }
 
+  @Test
+  @DisplayName("커서 값이 Cursor 만 전달됐을 경우에도 처리할 수 있음을 확인")
+  public void test_Cursor_Without_After(){
+    List<Dashboard> result = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(
+        Period.DAILY, "asc", "9", null, 10, KeyType.USER);
+
+    assertEquals(result.get(0).getRank(), 10);
+  }
+
+  @Test
+  @DisplayName("오름차순 내림차순 처리 확인")
+  public void test_Asc_Desc() {
+    // 오름차순 테스트
+    List<Dashboard> ascResult = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(
+        Period.DAILY, "asc", "invalid_cursor", null, 10, KeyType.USER);
+
+    for (int i = 0; i < ascResult.size() - 1; i++) {
+      assertTrue(ascResult.get(i).getRank() < ascResult.get(i + 1).getRank());
+    }
+
+    // 내림차순 테스트
+    List<Dashboard> descResult = dashboardRepositoryCustom.findDashboardsByPeriodWithCursor(
+        Period.DAILY, "desc", "invalid_cursor", null, 10, KeyType.USER);
+
+    for (int i = 0; i < ascResult.size() - 1; i++) {
+      assertTrue(descResult.get(i).getRank() > ascResult.get(i + 1).getRank());
+    }
+  }
 }

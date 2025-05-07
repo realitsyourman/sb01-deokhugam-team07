@@ -1,6 +1,7 @@
 package com.part3.team07.sb01deokhugamteam07.entity;
 
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import com.part3.team07.sb01deokhugamteam07.entity.base.BaseEntity;
 import jakarta.persistence.Column;
@@ -25,7 +26,7 @@ public class Dashboard extends BaseEntity {
   @Column(name = "\"key\"", nullable = false)
   private UUID key;
 
-  @Enumerated(EnumType.STRING) //추가함 (옵션 빠져있음)
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private KeyType keyType;
 
@@ -34,7 +35,7 @@ public class Dashboard extends BaseEntity {
   private Period period;
 
   @Column(name = "\"value\"", nullable = false)
-  private double value;
+  private BigDecimal value;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
