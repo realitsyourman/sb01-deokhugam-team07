@@ -7,11 +7,9 @@ import com.part3.team07.sb01deokhugamteam07.entity.Dashboard;
 import com.part3.team07.sb01deokhugamteam07.entity.KeyType;
 import com.part3.team07.sb01deokhugamteam07.entity.Period;
 import com.part3.team07.sb01deokhugamteam07.entity.Review;
-import com.part3.team07.sb01deokhugamteam07.exception.book.BookNotFoundException;
 import com.part3.team07.sb01deokhugamteam07.repository.BookRepository;
 import com.part3.team07.sb01deokhugamteam07.repository.DashboardRepository;
 import com.part3.team07.sb01deokhugamteam07.repository.ReviewRepository;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,7 +20,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.annotations.SdkTestInternalApi;
 
 @Slf4j
 @Service
@@ -53,9 +50,9 @@ public class PopularBookDashboardBatchService {
       }
 
       // 날짜 범위 계산
-      LocalDate[] dateRange = dateRangeUtil.getDateRange(period);
-      LocalDateTime startDateTime = dateRange[0].atStartOfDay();
-      LocalDateTime endDateTime = dateRange[1].plusDays(1).atStartOfDay().minusNanos(1);
+      LocalDateTime[] dateTimeRange  = dateRangeUtil.getDateRange(period);
+      LocalDateTime startDateTime = dateTimeRange[0];
+      LocalDateTime endDateTime = dateTimeRange[1];
 
       // 결과 저장용 대시보드 리스트
       List<Dashboard> dashboards = new ArrayList<>();
