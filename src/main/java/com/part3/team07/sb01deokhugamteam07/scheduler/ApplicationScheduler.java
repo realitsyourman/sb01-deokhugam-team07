@@ -4,6 +4,7 @@ import com.part3.team07.sb01deokhugamteam07.batch.popularbook.PopularBookDashboa
 import com.part3.team07.sb01deokhugamteam07.batch.popularreview.PopularReviewDashboardBatchService;
 import com.part3.team07.sb01deokhugamteam07.batch.poweruser.PowerUserDashboardBatchService;
 import com.part3.team07.sb01deokhugamteam07.entity.Period;
+import com.part3.team07.sb01deokhugamteam07.service.DashboardService;
 import com.part3.team07.sb01deokhugamteam07.service.NotificationService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +19,21 @@ public class ApplicationScheduler {
   private final PopularBookDashboardBatchService popularBookDashboardBatchService;
   private final PopularReviewDashboardBatchService popularReviewDashboardBatchService;
   private final NotificationService notificationService;
+  private final DashboardService dashboardService;
 
-  @Scheduled(cron = "0 0 16 * * *")
+
+  @Scheduled(cron = "0 0 15 * * *")
+  public void deleteDashboard(){
+    log.info("오전 3시 : 대시보드 일괄 삭제 시작");
+    try {
+      dashboardService.delete();
+    }catch (Exception e){
+      log.warn("대시보드 일괄 삭제 중 오류 발생: {}", e.getMessage(), e);
+    }
+  }
+
+
+  @Scheduled(cron = "0 1 15 * * *")
   public void calculateAllDashboardData(){
     log.info("오전 3시 : 대시보드 데이터 일괄 계산 시작");
     // 순차 실행
@@ -71,7 +85,7 @@ public class ApplicationScheduler {
 
   }
 
-  @Scheduled(cron = "0 1 16 * * *")
+  @Scheduled(cron = "0 0 4 * * *")
   public void deleteAllOldNotification(){
     log.info("오전 4시 : 확인된 알림 중 일주일 경과된 알림을 전체 삭제합니다.");
     notificationService.delete();

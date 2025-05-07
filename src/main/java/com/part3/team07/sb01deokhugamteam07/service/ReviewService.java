@@ -162,7 +162,7 @@ public class ReviewService {
 
                     // 알림 생성
                     NotificationCreateRequest notificationRequest = NotificationCreateRequest.builder()
-                        .type(NotificationType.REVIEW_COMMENTED)
+                        .type(NotificationType.REVIEW_LIKED)
                         .senderId(userId)
                         .reviewId(reviewId)
                         .build();
@@ -172,6 +172,7 @@ public class ReviewService {
                 });
     }
 
+    // ReviewService.java
     @Transactional(readOnly = true)
     public CursorPageResponseReviewDto findAll(UUID userId, UUID bookId, String keyword, ReviewOrderBy orderBy,
                                                ReviewDirection direction, String cursor, LocalDateTime after,
@@ -180,11 +181,12 @@ public class ReviewService {
         log.debug("리뷰 목록 조회 시작: userId={}, bookId={}, keyword={}, orderBy={}, direction={}, cursor={}, after={}, limit={}, requestUserId={}",
                 userId, bookId, keyword, orderBy, direction, cursor, after, limit, requestUserId);
 
-        //like 위해서 다 같이 바로 가져옴
         List<Tuple> results = reviewRepository.findAll(userId, bookId, keyword, orderBy, direction, cursor, after, limit + 1, requestUserId);
 
         boolean hasNext = results.size() > limit;
         List<Tuple> pageContent = hasNext ? results.subList(0, limit) : results;
+        long countResult = reviewRepository.count(userId, bookId, keyword);
+        int totalCount = Math.toIntExact(countResult);
 
         List<ReviewDto> dtoList = pageContent.stream()
                 .map(tuple -> {
@@ -195,12 +197,19 @@ public class ReviewService {
                 })
                 .toList();
 
-        String nextCursor = hasNext ? dtoList.get(dtoList.size() - 1).id().toString() : null;
+        String nextCursor = hasNext ? getCursorValue(dtoList.get(dtoList.size() - 1), orderBy) : null;
         LocalDateTime nextAfter = hasNext ? dtoList.get(dtoList.size() - 1).createdAt() : null;
 
         log.debug("리뷰 목록 조회 완료: 변환된 dto.size={}, hasNext={}, nextCursor={}", dtoList.size(), hasNext, nextCursor);
 
-        return new CursorPageResponseReviewDto(dtoList, nextCursor, nextAfter, dtoList.size(), dtoList.size(), hasNext);
+        return new CursorPageResponseReviewDto(dtoList, nextCursor, nextAfter, dtoList.size(), totalCount, hasNext);
+    }
+
+    private String getCursorValue(ReviewDto dto, ReviewOrderBy orderBy) {
+        return switch (orderBy) {
+            case RATING -> String.valueOf(dto.rating());
+            case CREATED_AT -> dto.createdAt().toString();
+        };
     }
 
     private ReviewLikeDto addLike(UUID userId, UUID reviewId){
