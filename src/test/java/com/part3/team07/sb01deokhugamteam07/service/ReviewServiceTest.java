@@ -447,7 +447,7 @@ class ReviewServiceTest {
     @DisplayName("리뷰 목록 조회 가능하다.")
     @Test
     void findAllReviews_success() {
-        // given
+        //given
         String keyword = null;
         String cursor = null;
         LocalDateTime after = null;
@@ -455,26 +455,42 @@ class ReviewServiceTest {
         ReviewOrderBy orderBy = ReviewOrderBy.CREATED_AT;
         ReviewDirection direction = ReviewDirection.DESC;
 
-        Tuple tuple = mock(Tuple.class);
-        given(tuple.get(QReview.review)).willReturn(review);
-        given(tuple.get(QLike.like)).willReturn(like);
+        ReviewDto dto = new ReviewDto(
+                reviewId,
+                bookId,
+                "책 제목",
+                "썸네일 URL",
+                userId,
+                "작성자 닉네임",
+                "리뷰 내용",
+                4,
+                10,
+                5,
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
 
-        List<Tuple> mockResult = List.of(tuple);
-        given(reviewRepository.findAll(userId, bookId, keyword, orderBy, direction, cursor, after, limit + 1, userId))
+        List<ReviewDto> mockResult = List.of(dto);
+        given(reviewRepository.findAll(any(), any(), any(), any(), any(), any(), any(), anyInt(), any()))
                 .willReturn(mockResult);
+        given(reviewRepository.count(any(), any(), any())).willReturn(1L);
 
-        // when
-        CursorPageResponseReviewDto response = reviewService.findAll(userId, bookId, keyword, orderBy, direction, cursor, after, limit, userId);
+        //when
+        CursorPageResponseReviewDto response = reviewService.findAll(
+                userId, bookId, keyword, orderBy, direction, cursor, after, limit, userId
+        );
 
-        // then
+        //then
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().get(0).id()).isEqualTo(reviewId);
         assertThat(response.content().get(0).likeByMe()).isTrue();
-
+        assertThat(response.hasNext()).isFalse();
         verify(reviewRepository).findAll(any(), any(), any(), any(), any(), any(), any(), anyInt(), any());
     }
 
-    @DisplayName("필터 조건과 함께 리뷰 목록을 조회할 수 있다.")
+
+    @DisplayName("리뷰 목록 조회 - 필터 조건이 적용된 경우")
     @Test
     void findAll_withFilters_success() {
         // given
@@ -483,20 +499,36 @@ class ReviewServiceTest {
         LocalDateTime after = LocalDateTime.now().minusDays(1);
         int limit = 10;
 
-        Tuple tuple = mock(Tuple.class);
-        given(tuple.get(QReview.review)).willReturn(review);
-        given(tuple.get(QLike.like)).willReturn(like);
+        ReviewDto dto = new ReviewDto(
+                reviewId,
+                bookId,
+                "좋아요 책",
+                "thumb.jpg",
+                userId,
+                "작성자",
+                "좋아요 내용",
+                5,
+                3,
+                2,
+                true,
+                LocalDateTime.now().minusHours(2),
+                LocalDateTime.now().minusHours(1)
+        );
 
-        given(reviewRepository.findAll(userId, bookId, keyword, ReviewOrderBy.CREATED_AT, ReviewDirection.DESC, cursor, after, limit + 1, userId))
-                .willReturn(List.of(tuple));
+        given(reviewRepository.findAll(any(), any(), any(), any(), any(), any(), any(), anyInt(), any()))
+                .willReturn(List.of(dto));
+        given(reviewRepository.count(any(), any(), any())).willReturn(1L);
 
         // when
-        CursorPageResponseReviewDto result = reviewService.findAll(userId, bookId, keyword, ReviewOrderBy.CREATED_AT, ReviewDirection.DESC, cursor, after, limit, userId);
+        CursorPageResponseReviewDto result = reviewService.findAll(
+                userId, bookId, keyword, ReviewOrderBy.CREATED_AT, ReviewDirection.DESC, cursor, after, limit, userId
+        );
 
         // then
         assertThat(result.content()).hasSize(1);
         assertThat(result.hasNext()).isFalse();
         assertThat(result.content().get(0).likeByMe()).isTrue();
+        assertThat(result.content().get(0).bookTitle()).contains("좋아요");
     }
 
     @DisplayName("limit보다 많은 결과가 조회되면 hasNext는 true이고 커서가 설정된다.")
@@ -505,52 +537,47 @@ class ReviewServiceTest {
         // given
         int limit = 2;
 
-        // 튜플 3개 준비 (limit + 1)
-        Tuple t1 = mock(Tuple.class);
-        Tuple t2 = mock(Tuple.class);
-        Tuple t3 = mock(Tuple.class);
-
-        Review r1 = Review.builder()
-                .user(user)
-                .book(book)
-                .content("c1")
-                .rating(3)
-                .build();
-        Review r2 = Review.builder()
-                .user(user)
-                .book(book)
-                .content("c2")
-                .rating(4)
-                .build();
+        UUID reviewId1 = UUID.randomUUID();
+        UUID reviewId2 = UUID.randomUUID();
+        UUID reviewId3 = UUID.randomUUID();
 
         LocalDateTime created1 = LocalDateTime.now().minusMinutes(10);
         LocalDateTime created2 = LocalDateTime.now().minusMinutes(5);
+        LocalDateTime created3 = LocalDateTime.now().minusMinutes(1); // limit+1번째
 
-        ReflectionTestUtils.setField(r1, "id", UUID.randomUUID());
-        ReflectionTestUtils.setField(r2, "id", UUID.randomUUID());
-        ReflectionTestUtils.setField(r1, "createdAt", created1);
-        ReflectionTestUtils.setField(r2, "createdAt", created2);
+        ReviewDto dto1 = new ReviewDto(
+                reviewId1, bookId, "책1", "thumb1", userId, "닉네임", "내용1",
+                3, 5, 2, true, created1, created1
+        );
 
-        given(t1.get(QReview.review)).willReturn(r1);
-        given(t1.get(QLike.like)).willReturn(like);
-        given(t2.get(QReview.review)).willReturn(r2);
-        given(t2.get(QLike.like)).willReturn(null);
+        ReviewDto dto2 = new ReviewDto(
+                reviewId2, bookId, "책2", "thumb2", userId, "닉네임", "내용2",
+                4, 7, 1, false, created2, created2
+        );
+
+        ReviewDto dto3 = new ReviewDto(
+                reviewId3, bookId, "책3", "thumb3", userId, "닉네임", "내용3",
+                2, 1, 0, false, created3, created3
+        );
 
         given(reviewRepository.findAll(
                 any(), any(), any(), any(), any(),
                 any(), any(), anyInt(), any()
-        )).willReturn(List.of(t1, t2, t3)); // limit + 1개
+        )).willReturn(List.of(dto1, dto2, dto3)); // limit + 1개
 
-        // when
+        given(reviewRepository.count(any(), any(), any())).willReturn(10L);
+
+        //when
         CursorPageResponseReviewDto result = reviewService.findAll(
                 null, null, null,
                 ReviewOrderBy.CREATED_AT, ReviewDirection.DESC,
                 null, null, limit, userId
         );
 
-        // then
+        //then
         assertThat(result.hasNext()).isTrue();
         assertThat(result.content()).hasSize(limit);
         assertThat(result.nextCursor()).isEqualTo(created2.toString());
+        assertThat(result.nextAfter()).isEqualTo(created2);
     }
 }

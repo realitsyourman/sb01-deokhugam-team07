@@ -1,6 +1,7 @@
 package com.part3.team07.sb01deokhugamteam07.repository;
 
 import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
+import com.part3.team07.sb01deokhugamteam07.dto.review.ReviewDto;
 import com.part3.team07.sb01deokhugamteam07.entity.*;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -268,44 +270,45 @@ class ReviewRepositoryTest {
         // given
         User user = userRepository.save(createTestUser("tester", "tester@example.com"));
         Book book = bookRepository.save(createTestBook("Querydsl Testing"));
-        for (int i = 0; i < 5; i++) {
-            Review review = createTestReview(user, book);
-            reviewRepository.save(review);
-        }
+
+        IntStream.range(0, 5).forEach(i ->
+                reviewRepository.save(createTestReview(user, book))
+        );
+
         em.flush();
         em.clear();
 
         // when
-        List<Tuple> result = reviewRepository.findAll(
+        List<ReviewDto> results = reviewRepository.findAll(
                 user.getId(),
                 book.getId(),
                 "Testing",
                 ReviewOrderBy.CREATED_AT,
                 ReviewDirection.DESC,
-                null, null,
+                null,
+                null,
                 10,
                 user.getId()
         );
 
         // then
-        assertThat(result).hasSize(5);
+        assertThat(results).hasSize(5);
     }
 
-    @DisplayName("리뷰 목록 조회 - 좋아요 포함 결과 반환")
+    @DisplayName("리뷰 목록 조회 - 요청자 기준 좋아요 여부 포함")
     @Test
-    void findAll_withLike_success() {
+    void findAll_withLikeByMe() {
         // given
         User user = userRepository.save(createTestUser("user", "user@abc.com"));
         Book book = bookRepository.save(createTestBook("테스트 도서"));
         Review review = reviewRepository.save(createTestReview(user, book));
 
-        // 요청자 ID 기준 좋아요 데이터 저장
         likeRepository.save(new Like(user.getId(), review.getId()));
         em.flush();
         em.clear();
 
         // when
-        List<Tuple> results = reviewRepository.findAll(
+        List<ReviewDto> results = reviewRepository.findAll(
                 user.getId(),
                 book.getId(),
                 null,
@@ -319,12 +322,10 @@ class ReviewRepositoryTest {
 
         // then
         assertThat(results).hasSize(1);
-        Tuple tuple = results.get(0);
-        Review fetchedReview = tuple.get(QReview.review);
-        Like fetchedLike = tuple.get(QLike.like);
+        ReviewDto dto = results.get(0);
 
-        assertThat(fetchedReview.getId()).isEqualTo(review.getId());
-        assertThat(fetchedLike).isNotNull(); // 좋아요 포함 확인
+        assertThat(dto.id()).isEqualTo(review.getId());
+        assertThat(dto.likeByMe()).isTrue();
     }
 
     @Test
@@ -352,7 +353,7 @@ class ReviewRepositoryTest {
         return User.builder()
                 .nickname(nickname)
                 .email(email)
-                .password("password123!@#") // 테스트용 비밀번호
+                .password("password123!@#")
                 .build();
     }
 
