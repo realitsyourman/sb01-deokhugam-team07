@@ -37,3 +37,84 @@
  
 
 ## 📁 파일 구조
+
+````
+src
+├─main
+│  ├─java
+│  │  └─com
+│  │      └─part3
+│  │          └─team07
+│  │              └─sb01deokhugamteam07
+│  │                  ├─batch
+│  │                  │  ├─popularbook
+│  │                  │  ├─popularreview
+│  │                  │  └─poweruser
+│  │                  ├─client
+│  │                  │  └─dto
+│  │                  ├─config
+│  │                  ├─controller
+│  │                  ├─converter
+│  │                  ├─dto
+│  │                  │  ├─book
+│  │                  │  │  ├─request
+│  │                  │  │  └─response
+│  │                  │  ├─comment
+│  │                  │  │  ├─request
+│  │                  │  │  └─response
+│  │                  │  ├─notification
+│  │                  │  │  ├─request
+│  │                  │  │  └─response
+│  │                  │  ├─review
+│  │                  │  │  ├─request
+│  │                  │  │  └─response
+│  │                  │  └─user
+│  │                  │      ├─request
+│  │                  │      └─response
+│  │                  ├─entity
+│  │                  │  └─base
+│  │                  ├─exception
+│  │                  │  ├─book
+│  │                  │  ├─comment
+│  │                  │  ├─notification
+│  │                  │  ├─review
+│  │                  │  ├─storage
+│  │                  │  └─user
+│  │                  ├─logging
+│  │                  ├─mapper
+│  │                  ├─repository
+│  │                  ├─scheduler
+│  │                  ├─security
+│  │                  │  └─filter
+│  │                  ├─service
+│  │                  ├─storage
+│  │                  ├─type
+│  │                  ├─util
+│  │                  └─validator
+│  └─resources
+│      └─static
+│          ├─assets
+│          ├─images
+│          └─storage
+└─test
+    ├─java
+    │  └─com
+    │      └─part3
+    │          └─team07
+    │              └─sb01deokhugamteam07
+    │                  ├─batch
+    │                  │  ├─popularbook
+    │                  │  ├─popularreview
+    │                  │  └─poweruser
+    │                  ├─client
+    │                  ├─controller
+    │                  ├─entity
+    │                  ├─integration
+    │                  ├─mapper
+    │                  ├─repository
+    │                  ├─service
+    │                  └─storage
+    └─resources
+        └─static
+            └─storage
+                └─thumbnail
