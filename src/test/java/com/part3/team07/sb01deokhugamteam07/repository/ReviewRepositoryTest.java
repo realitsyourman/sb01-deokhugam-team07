@@ -1,10 +1,13 @@
 package com.part3.team07.sb01deokhugamteam07.repository;
 
 import com.part3.team07.sb01deokhugamteam07.config.QuerydslConfig;
-import com.part3.team07.sb01deokhugamteam07.entity.Book;
-import com.part3.team07.sb01deokhugamteam07.entity.Review;
-import com.part3.team07.sb01deokhugamteam07.entity.User;
+import com.part3.team07.sb01deokhugamteam07.entity.*;
+
 import java.math.BigDecimal;
+
+import com.part3.team07.sb01deokhugamteam07.type.ReviewDirection;
+import com.part3.team07.sb01deokhugamteam07.type.ReviewOrderBy;
+import com.querydsl.core.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,9 @@ class ReviewRepositoryTest {
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private LikeRepository likeRepository;
 
     @Autowired
     private TestEntityManager em;
@@ -255,6 +261,92 @@ class ReviewRepositoryTest {
         assertThat(result).isEmpty();
     }
 
+
+    @DisplayName("리뷰 목록 조회 - 필터, 정렬, 페이징 조건을 모두 만족하는 결과 반환")
+    @Test
+    void findAll_withFiltersAndPaging() {
+        // given
+        User user = userRepository.save(createTestUser("tester", "tester@example.com"));
+        Book book = bookRepository.save(createTestBook("Querydsl Testing"));
+        for (int i = 0; i < 5; i++) {
+            Review review = createTestReview(user, book);
+            reviewRepository.save(review);
+        }
+        em.flush();
+        em.clear();
+
+        // when
+        List<Tuple> result = reviewRepository.findAll(
+                user.getId(),
+                book.getId(),
+                "Testing",
+                ReviewOrderBy.CREATED_AT,
+                ReviewDirection.DESC,
+                null, null,
+                10,
+                user.getId()
+        );
+
+        // then
+        assertThat(result).hasSize(5);
+    }
+
+    @DisplayName("리뷰 목록 조회 - 좋아요 포함 결과 반환")
+    @Test
+    void findAll_withLike_success() {
+        // given
+        User user = userRepository.save(createTestUser("user", "user@abc.com"));
+        Book book = bookRepository.save(createTestBook("테스트 도서"));
+        Review review = reviewRepository.save(createTestReview(user, book));
+
+        // 요청자 ID 기준 좋아요 데이터 저장
+        likeRepository.save(new Like(user.getId(), review.getId()));
+        em.flush();
+        em.clear();
+
+        // when
+        List<Tuple> results = reviewRepository.findAll(
+                user.getId(),
+                book.getId(),
+                null,
+                ReviewOrderBy.CREATED_AT,
+                ReviewDirection.DESC,
+                null,
+                null,
+                10,
+                user.getId()
+        );
+
+        // then
+        assertThat(results).hasSize(1);
+        Tuple tuple = results.get(0);
+        Review fetchedReview = tuple.get(QReview.review);
+        Like fetchedLike = tuple.get(QLike.like);
+
+        assertThat(fetchedReview.getId()).isEqualTo(review.getId());
+        assertThat(fetchedLike).isNotNull(); // 좋아요 포함 확인
+    }
+
+    @Test
+    @DisplayName("리뷰 조건 검색 카운트 - keyword 포함된 리뷰만 카운트된다")
+    void countReviewByConditions() {
+        // given
+        User user = userRepository.save(createTestUser("우디", "woody@example.com"));
+        Book book = bookRepository.save(createTestBook("Go in Action"));
+
+        reviewRepository.save(createTestReview(user, book));
+        reviewRepository.save(createTestReview(user, book));
+        reviewRepository.save(createTestReview(user, book));
+
+        em.flush();
+        em.clear();
+
+        // when
+        long count = reviewRepository.count(user.getId(), book.getId(), "좋은");
+
+        // then
+        assertThat(count).isEqualTo(3);
+    }
 
     private User createTestUser(String nickname, String email) {
         return User.builder()

@@ -19,8 +19,6 @@ public class StorageService {
 
   public String save(MultipartFile thumbnailImage, FileType fileType) {
     String fileName = generateFileName(thumbnailImage);
-    log.info("파일 저장 시도 - 파일명: {}, 파일 유형: {}", fileName, fileType);
-
     try {
       storage.put(fileType, fileName, thumbnailImage.getBytes());
       log.info("파일 저장 성공 - 파일명: {}, 파일 유형: {}", fileName, fileType);
